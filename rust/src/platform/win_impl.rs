@@ -299,3 +299,11 @@ unsafe fn cleanup_dc(mem_dc: HDC, screen_dc: HDC, color_bitmap: HBITMAP, mask_bi
 fn windows_string(value: &str) -> Vec<u16> {
     value.encode_utf16().chain(std::iter::once(0)).collect()
 }
+
+pub fn request_badge_permission() -> Result<bool, String> {
+    Ok(true)
+}
+
+pub fn is_badge_permission_granted() -> Result<bool, String> {
+    Ok(true)
+}

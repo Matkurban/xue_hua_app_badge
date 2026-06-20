@@ -13,3 +13,9 @@ void setBadge({required int count, PlatformInt64? windowHandle}) => RustLib
 
 void removeBadge({PlatformInt64? windowHandle}) =>
     RustLib.instance.api.crateApiBadgeRemoveBadge(windowHandle: windowHandle);
+
+bool requestBadgePermission() =>
+    RustLib.instance.api.crateApiBadgeRequestBadgePermission();
+
+bool isBadgePermissionGranted() =>
+    RustLib.instance.api.crateApiBadgeIsBadgePermissionGranted();

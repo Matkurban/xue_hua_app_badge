@@ -47,3 +47,11 @@ fn set_badge_on_main_thread(count: i32) -> Result<(), String> {
     dock_tile.display();
     Ok(())
 }
+
+pub fn request_badge_permission() -> Result<bool, String> {
+    Ok(true)
+}
+
+pub fn is_badge_permission_granted() -> Result<bool, String> {
+    Ok(true)
+}

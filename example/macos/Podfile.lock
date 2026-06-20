@@ -1,0 +1,22 @@
+PODS:
+  - FlutterMacOS (1.0.0)
+  - xue_hua_app_badge (0.0.1):
+    - FlutterMacOS
+
+DEPENDENCIES:
+  - FlutterMacOS (from `Flutter/ephemeral`)
+  - xue_hua_app_badge (from `Flutter/ephemeral/.symlinks/plugins/xue_hua_app_badge/macos`)
+
+EXTERNAL SOURCES:
+  FlutterMacOS:
+    :path: Flutter/ephemeral
+  xue_hua_app_badge:
+    :path: Flutter/ephemeral/.symlinks/plugins/xue_hua_app_badge/macos
+
+SPEC CHECKSUMS:
+  FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
+  xue_hua_app_badge: 5886167723c9e7d29fff3babac5ee1e1d4bbac0f
+
+PODFILE CHECKSUM: 54d867c82ac51cbd61b565781b9fada492027009
+
+COCOAPODS: 1.16.2

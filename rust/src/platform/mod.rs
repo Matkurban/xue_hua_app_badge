@@ -22,3 +22,13 @@ pub(crate) fn format_badge_label(count: i32) -> String {
         count.to_string()
     }
 }
+
+pub(crate) fn badge_number(count: i32) -> i32 {
+    if count <= 0 {
+        0
+    } else if count > 99 {
+        99
+    } else {
+        count
+    }
+}

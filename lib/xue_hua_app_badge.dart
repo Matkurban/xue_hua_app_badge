@@ -2,7 +2,12 @@ library;
 
 import 'src/rust/api/badge.dart';
 
-export 'src/rust/api/badge.dart' show removeBadge, setBadge;
+export 'src/rust/api/badge.dart'
+    show
+        isBadgePermissionGranted,
+        removeBadge,
+        requestBadgePermission,
+        setBadge;
 export 'src/rust/api/simple.dart' show greet;
 export 'src/rust/frb_generated.dart' show RustLib;
 
@@ -17,4 +22,8 @@ class XueHuaAppBadge {
   static void remove({int? windowHandle}) {
     removeBadge(windowHandle: windowHandle);
   }
+
+  static bool requestPermission() => requestBadgePermission();
+
+  static bool isPermissionGranted() => isBadgePermissionGranted();
 }

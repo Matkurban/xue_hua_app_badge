@@ -42,6 +42,7 @@ flutter:
   plugin:
     platforms:
       android:
+        pluginClass: XueHuaAppBadgePlugin
         ffiPlugin: true
       ios:
         ffiPlugin: true

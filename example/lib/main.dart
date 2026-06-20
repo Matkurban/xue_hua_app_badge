@@ -22,7 +22,9 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    _ensureBadgePermission();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _ensureBadgePermission();
+    });
   }
 
   Future<void> _ensureBadgePermission() async {
@@ -119,7 +121,7 @@ class _MyAppState extends State<MyApp> {
                 const SizedBox(height: 16),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Text(
+                  child: SelectableText(
                     _lastError!,
                     style: TextStyle(color: Theme.of(context).colorScheme.error),
                     textAlign: TextAlign.center,

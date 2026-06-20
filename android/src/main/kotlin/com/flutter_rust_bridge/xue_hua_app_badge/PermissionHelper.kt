@@ -19,6 +19,7 @@ object PermissionHelper {
     @Volatile
     private var pendingResult: Boolean = false
 
+    @JvmStatic
     fun isBadgePermissionGranted(context: Context): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
             return true
@@ -29,6 +30,7 @@ object PermissionHelper {
         ) == PackageManager.PERMISSION_GRANTED
     }
 
+    @JvmStatic
     fun requestBadgePermission(activity: Activity): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
             return true

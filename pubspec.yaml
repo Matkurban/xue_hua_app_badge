@@ -42,6 +42,7 @@ flutter:
   plugin:
     platforms:
       android:
+        package: com.flutter_rust_bridge.xue_hua_app_badge
         pluginClass: XueHuaAppBadgePlugin
         ffiPlugin: true
       ios:

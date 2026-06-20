@@ -18,7 +18,8 @@ pub fn set_badge(count: i32) -> Result<(), String> {
         }
     };
 
-    let conn = Connection::session().map_err(|e| format!("D-Bus session connection failed: {e}"))?;
+    let conn =
+        Connection::session().map_err(|e| format!("D-Bus session connection failed: {e}"))?;
     conn.emit_signal(
         None,
         "/com/canonical/unity/launcherentry/1",

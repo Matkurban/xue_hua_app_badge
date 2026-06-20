@@ -9,7 +9,9 @@ use windows::Win32::Graphics::Gdi::{
     FONT_CHARSET, FONT_CLIP_PRECISION, FONT_QUALITY, FW_BOLD, HBITMAP, HDC, HFONT, HGDIOBJ,
     ICONINFO, OUT_DEFAULT_PRECIS, TRANSPARENT,
 };
-use windows::Win32::System::Com::{CoCreateInstance, CoInitializeEx, CLSCTX_INPROC_SERVER, COINIT_APARTMENTTHREADED};
+use windows::Win32::System::Com::{
+    CoCreateInstance, CoInitializeEx, CLSCTX_INPROC_SERVER, COINIT_APARTMENTTHREADED,
+};
 use windows::Win32::UI::Shell::{ITaskbarList3, TaskbarList};
 use windows::Win32::UI::WindowsAndMessaging::{CreateIconIndirect, DestroyIcon, GetActiveWindow};
 
@@ -153,15 +155,8 @@ fn create_badge_icon(label: &str) -> Result<HICON, String> {
         };
 
         let mut bits: *mut core::ffi::c_void = std::ptr::null_mut();
-        let color_bitmap = CreateDIBSection(
-            Some(mem_dc),
-            &bmi,
-            DIB_RGB_COLORS,
-            &mut bits,
-            None,
-            0,
-        )
-        .map_err(|e| format!("CreateDIBSection failed: {e}"))?;
+        let color_bitmap = CreateDIBSection(Some(mem_dc), &bmi, DIB_RGB_COLORS, &mut bits, None, 0)
+            .map_err(|e| format!("CreateDIBSection failed: {e}"))?;
 
         if bits.is_null() {
             cleanup_dc(mem_dc, screen_dc, color_bitmap, HBITMAP::default());

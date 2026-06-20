@@ -1,13 +1,12 @@
 use block2::RcBlock;
 use core::ptr::NonNull;
 use dispatch2::DispatchQueue;
-use objc2::MainThreadMarker;
 use objc2::runtime::Bool;
+use objc2::MainThreadMarker;
 use objc2_foundation::NSError;
 use objc2_ui_kit::{UIApplication, UIDevice};
 use objc2_user_notifications::{
-    UNAuthorizationOptions, UNAuthorizationStatus, UNNotificationSettings,
-    UNUserNotificationCenter,
+    UNAuthorizationOptions, UNAuthorizationStatus, UNNotificationSettings, UNUserNotificationCenter,
 };
 use std::sync::{Arc, Condvar, Mutex};
 
@@ -118,10 +117,7 @@ fn request_badge_permission_on_main_thread() -> Result<bool, String> {
         cvar.notify_one();
     });
 
-    center.requestAuthorizationWithOptions_completionHandler(
-        UNAuthorizationOptions::Badge,
-        &block,
-    );
+    center.requestAuthorizationWithOptions_completionHandler(UNAuthorizationOptions::Badge, &block);
 
     let (lock, cvar) = &*wait;
     let mut guard = lock.lock().unwrap();

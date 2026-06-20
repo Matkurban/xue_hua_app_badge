@@ -1,5 +1,8 @@
 #[flutter_rust_bridge::frb(sync)]
-pub fn set_badge(count: i32, #[allow(unused_variables)] window_handle: Option<i64>) -> Result<(), String> {
+pub fn set_badge(
+    count: i32,
+    #[allow(unused_variables)] window_handle: Option<i64>,
+) -> Result<(), String> {
     if count < 0 {
         return Err("Badge count must be >= 0".into());
     }

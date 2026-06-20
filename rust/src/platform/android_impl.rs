@@ -4,8 +4,7 @@ mod context;
 pub fn set_badge(count: i32) -> Result<(), String> {
     if !context::is_initialized() {
         return Err(
-            "Android context not initialized; add XueHuaAppBadgePlugin to your Flutter app"
-                .into(),
+            "Android context not initialized; add XueHuaAppBadgePlugin to your Flutter app".into(),
         );
     }
 
@@ -15,8 +14,7 @@ pub fn set_badge(count: i32) -> Result<(), String> {
 pub fn request_badge_permission() -> Result<bool, String> {
     if !context::is_initialized() {
         return Err(
-            "Android context not initialized; add XueHuaAppBadgePlugin to your Flutter app"
-                .into(),
+            "Android context not initialized; add XueHuaAppBadgePlugin to your Flutter app".into(),
         );
     }
 
@@ -26,8 +24,7 @@ pub fn request_badge_permission() -> Result<bool, String> {
 pub fn is_badge_permission_granted() -> Result<bool, String> {
     if !context::is_initialized() {
         return Err(
-            "Android context not initialized; add XueHuaAppBadgePlugin to your Flutter app"
-                .into(),
+            "Android context not initialized; add XueHuaAppBadgePlugin to your Flutter app".into(),
         );
     }
 

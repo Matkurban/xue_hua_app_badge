@@ -51,7 +51,17 @@ class XueHuaAppBadgePlugin :
                     )
                     return
                 }
-                result.success(PermissionHelper.requestBadgePermission(currentActivity))
+                if (PermissionHelper.hasPendingPermissionRequest()) {
+                    result.error(
+                        "PERMISSION_IN_PROGRESS",
+                        "A badge permission request is already in progress",
+                        null,
+                    )
+                    return
+                }
+                PermissionHelper.requestBadgePermission(currentActivity) { granted ->
+                    result.success(granted)
+                }
             }
             else -> result.notImplemented()
         }

@@ -7,17 +7,12 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 
 object PermissionHelper {
     private const val REQUEST_CODE = 0x5876
 
     @Volatile
-    private var pendingLatch: CountDownLatch? = null
-
-    @Volatile
-    private var pendingResult: Boolean = false
+    private var pendingCallback: ((Boolean) -> Unit)? = null
 
     @JvmStatic
     fun isBadgePermissionGranted(context: Context): Boolean {
@@ -31,18 +26,20 @@ object PermissionHelper {
     }
 
     @JvmStatic
-    fun requestBadgePermission(activity: Activity): Boolean {
+    fun hasPendingPermissionRequest(): Boolean = pendingCallback != null
+
+    @JvmStatic
+    fun requestBadgePermission(activity: Activity, callback: (Boolean) -> Unit) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            return true
+            callback(true)
+            return
         }
         if (isBadgePermissionGranted(activity)) {
-            return true
+            callback(true)
+            return
         }
 
-        val latch = CountDownLatch(1)
-        pendingLatch = latch
-        pendingResult = false
-
+        pendingCallback = callback
         activity.runOnUiThread {
             ActivityCompat.requestPermissions(
                 activity,
@@ -50,10 +47,6 @@ object PermissionHelper {
                 REQUEST_CODE,
             )
         }
-
-        latch.await(30, TimeUnit.SECONDS)
-        pendingLatch = null
-        return pendingResult
     }
 
     fun onRequestPermissionsResult(
@@ -64,9 +57,11 @@ object PermissionHelper {
         if (requestCode != REQUEST_CODE) {
             return false
         }
-        pendingResult = grantResults.isNotEmpty() &&
+        val granted = grantResults.isNotEmpty() &&
             grantResults[0] == PackageManager.PERMISSION_GRANTED
-        pendingLatch?.countDown()
+        val callback = pendingCallback
+        pendingCallback = null
+        callback?.invoke(granted)
         return true
     }
 }

@@ -41,8 +41,8 @@ public class XueHuaAppBadgePlugin: NSObject, FlutterPlugin {
   private func setBadge(count: Int, result: @escaping FlutterResult) {
     DispatchQueue.main.async {
       let label = self.badgeLabel(for: count)
-      NSApplication.shared.dockTile?.badgeLabel = label
-      NSApplication.shared.dockTile?.display()
+      NSApplication.shared.dockTile.badgeLabel = label
+      NSApplication.shared.dockTile.display()
       result(nil)
     }
   }

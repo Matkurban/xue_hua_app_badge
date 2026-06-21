@@ -12,9 +12,9 @@ Native macOS dock badge support via MethodChannel.
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Matkurban' => 'https://github.com/Matkurban' }
   s.source           = { :path => '.' }
-  s.source_files     = 'Classes/**/*'
+  s.source_files     = 'xue_hua_app_badge/Sources/xue_hua_app_badge/**/*.swift'
   s.dependency 'FlutterMacOS'
-  s.platform = :osx, '10.11'
+  s.platform = :osx, '10.15'
   s.swift_version = '5.0'
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
 end

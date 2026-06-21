@@ -12,7 +12,7 @@ Native iOS badge support via MethodChannel.
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Matkurban' => 'https://github.com/Matkurban' }
   s.source           = { :path => '.' }
-  s.source_files     = 'Classes/**/*'
+  s.source_files     = 'xue_hua_app_badge/Sources/xue_hua_app_badge/**/*.swift'
   s.dependency 'Flutter'
   s.platform = :ios, '12.0'
   s.swift_version = '5.0'

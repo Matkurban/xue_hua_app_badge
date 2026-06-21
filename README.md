@@ -1,5 +1,7 @@
 # xue_hua_app_badge
 
+[![pub package](https://img.shields.io/pub/v/xue_hua_app_badge.svg)](https://pub.dev/packages/xue_hua_app_badge)
+
 跨平台 Flutter 应用角标（Badge）插件，采用**混合架构**：
 
 - **Android / iOS / macOS**：原生 MethodChannel，直接调用各平台 API
@@ -10,6 +12,8 @@
 - 统一 API：`XueHuaAppBadge.set(count)` / `XueHuaAppBadge.remove()` / `XueHuaAppBadge.requestPermission()` / `XueHuaAppBadge.isPermissionGranted()`
 - 五端支持，各平台使用最适合的实现方式
 - 数字超过 99 时：macOS 显示 `99+`；其他平台显示 `99`
+- iOS / macOS 支持 Swift Package Manager（SPM），同时保留 CocoaPods 兼容
+- Android 使用 AGP Built-in Kotlin，无需插件侧声明 KGP
 
 ## 平台支持
 
@@ -25,15 +29,23 @@
 
 ```yaml
 dependencies:
+  xue_hua_app_badge: ^1.0.0
+```
+
+本地路径依赖：
+
+```yaml
+dependencies:
   xue_hua_app_badge:
     path: ../xue_hua_app_badge
 ```
 
 ### 环境要求
 
-- Flutter >= 3.3.0，Dart SDK ^3.12.2
+- **Flutter >= 3.44.0**，**Dart SDK ^3.12.0**
 - **Rust** 工具链（仅 Windows / Linux 桌面端需要）
 - 各平台常规 Flutter 开发环境
+- iOS / macOS 建议使用 Flutter 3.44+ 默认启用的 Swift Package Manager
 
 ## 快速开始
 
@@ -93,6 +105,10 @@ Android 自动化测试：
 - **Android**：Android 13+ 需先调用 `requestPermission()`；部分 Launcher 不支持 ShortcutBadger
 - **Linux**：仅 Unity LauncherEntry 协议
 
+## 更新日志
+
+见 [CHANGELOG.md](CHANGELOG.md)。
+
 ## License
 
-见仓库根目录 LICENSE 文件。
+见仓库根目录 [LICENSE](LICENSE) 文件。

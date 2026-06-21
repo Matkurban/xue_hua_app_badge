@@ -1,12 +1,12 @@
 name: xue_hua_app_badge
 description: "Cross-platform Flutter app badge plugin. Android, iOS, and macOS use native MethodChannel; Windows and Linux use a Rust core via flutter_rust_bridge."
-version: 0.0.1
+version: 1.0.0
 homepage: https://github.com/Matkurban/xue_hua_app_badge
 repository: https://github.com/Matkurban/xue_hua_app_badge
 
 environment:
-  sdk: ^3.11.0
-  flutter: '>=3.41.0'
+  sdk: ^3.12.0
+  flutter: '>=3.44.0'
 
 dependencies:
   flutter:

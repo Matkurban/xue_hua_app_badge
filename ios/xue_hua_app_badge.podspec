@@ -3,7 +3,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'xue_hua_app_badge'
-  s.version          = '0.0.1'
+  s.version          = '1.0.0'
   s.summary          = 'Cross-platform Flutter app badge plugin.'
   s.description      = <<-DESC
 Native iOS badge support via MethodChannel.

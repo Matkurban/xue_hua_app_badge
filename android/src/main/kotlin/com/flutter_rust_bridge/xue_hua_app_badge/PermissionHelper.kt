@@ -43,11 +43,13 @@ object PermissionHelper {
         pendingLatch = latch
         pendingResult = false
 
-        ActivityCompat.requestPermissions(
-            activity,
-            arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-            REQUEST_CODE,
-        )
+        activity.runOnUiThread {
+            ActivityCompat.requestPermissions(
+                activity,
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                REQUEST_CODE,
+            )
+        }
 
         latch.await(30, TimeUnit.SECONDS)
         pendingLatch = null

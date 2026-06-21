@@ -1,29 +1,32 @@
 library;
 
-import 'src/rust/api/badge.dart';
+import 'src/platform_badge.dart';
 
-export 'src/rust/api/badge.dart'
-    show
-        isBadgePermissionGranted,
-        removeBadge,
-        requestBadgePermission,
-        setBadge;
-export 'src/rust/api/simple.dart' show greet;
-export 'src/rust/frb_generated.dart' show RustLib;
+export 'src/platform_badge.dart' show RustLib, initBadgePlugin, usesRustBadge;
 
-/// Unified Dart wrapper for the Rust badge API.
+/// Unified cross-platform badge API.
+///
+/// - Android / iOS / macOS: native MethodChannel
+/// - Windows / Linux: flutter_rust_bridge (Rust)
 class XueHuaAppBadge {
   const XueHuaAppBadge._();
 
-  static void set(int count, {int? windowHandle}) {
-    setBadge(count: count, windowHandle: windowHandle);
+  static Future<void> set(int count, {int? windowHandle}) {
+    if (count < 0) {
+      throw ArgumentError.value(count, 'count', 'Badge count must be >= 0');
+    }
+    return platformSetBadge(count, windowHandle: windowHandle);
   }
 
-  static void remove({int? windowHandle}) {
-    removeBadge(windowHandle: windowHandle);
+  static Future<void> remove({int? windowHandle}) {
+    return platformRemoveBadge(windowHandle: windowHandle);
   }
 
-  static bool requestPermission() => requestBadgePermission();
+  static Future<bool> requestPermission() {
+    return platformRequestPermission();
+  }
 
-  static bool isPermissionGranted() => isBadgePermissionGranted();
+  static Future<bool> isPermissionGranted() {
+    return platformIsPermissionGranted();
+  }
 }

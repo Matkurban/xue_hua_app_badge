@@ -3,7 +3,7 @@ import 'package:xue_hua_app_badge/xue_hua_app_badge.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await RustLib.init();
+  await initBadgePlugin();
   runApp(const MyApp());
 }
 
@@ -29,10 +29,10 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> _ensureBadgePermission() async {
     try {
-      if (XueHuaAppBadge.isPermissionGranted()) {
+      if (await XueHuaAppBadge.isPermissionGranted()) {
         return;
       }
-      final granted = XueHuaAppBadge.requestPermission();
+      final granted = await XueHuaAppBadge.requestPermission();
       if (!granted && mounted) {
         setState(() {
           _permissionHint =
@@ -46,16 +46,18 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  void _updateBadge(int count) {
+  Future<void> _updateBadge(int count) async {
     setState(() {
       _badgeCount = count;
       _lastError = null;
     });
 
     try {
-      XueHuaAppBadge.set(count);
+      await XueHuaAppBadge.set(count);
     } catch (error) {
-      setState(() => _lastError = error.toString());
+      if (mounted) {
+        setState(() => _lastError = error.toString());
+      }
     }
   }
 
@@ -98,9 +100,8 @@ class _MyAppState extends State<MyApp> {
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 24),
                 child: Text(
-                  'macOS: dock badge · Windows: taskbar overlay · '
-                  'Linux: Unity LauncherEntry (GNOME/KDE/Ubuntu) · '
-                  'iOS / Android: call requestPermission() before set()',
+                  'Android / iOS / macOS: native MethodChannel · '
+                  'Windows / Linux: Rust (FRB)',
                   textAlign: TextAlign.center,
                 ),
               ),

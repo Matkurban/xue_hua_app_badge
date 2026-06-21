@@ -10,31 +10,13 @@ pub fn set_badge(
     {
         return crate::platform::win_impl::set_badge(count, window_handle);
     }
-    #[cfg(target_os = "macos")]
-    {
-        return crate::platform::macos_impl::set_badge(count);
-    }
     #[cfg(target_os = "linux")]
     {
         return crate::platform::linux_impl::set_badge(count);
     }
-    #[cfg(target_os = "ios")]
+    #[cfg(not(any(target_os = "windows", target_os = "linux")))]
     {
-        return crate::platform::ios_impl::set_badge(count);
-    }
-    #[cfg(target_os = "android")]
-    {
-        return crate::platform::android_impl::set_badge(count);
-    }
-    #[cfg(not(any(
-        target_os = "windows",
-        target_os = "macos",
-        target_os = "linux",
-        target_os = "ios",
-        target_os = "android"
-    )))]
-    {
-        Err("Platform not supported".into())
+        Err("Desktop badge is only supported on Windows and Linux".into())
     }
 }
 
@@ -49,29 +31,11 @@ pub fn request_badge_permission() -> Result<bool, String> {
     {
         return crate::platform::win_impl::request_badge_permission();
     }
-    #[cfg(target_os = "macos")]
-    {
-        return crate::platform::macos_impl::request_badge_permission();
-    }
     #[cfg(target_os = "linux")]
     {
         return crate::platform::linux_impl::request_badge_permission();
     }
-    #[cfg(target_os = "ios")]
-    {
-        return crate::platform::ios_impl::request_badge_permission();
-    }
-    #[cfg(target_os = "android")]
-    {
-        return crate::platform::android_impl::request_badge_permission();
-    }
-    #[cfg(not(any(
-        target_os = "windows",
-        target_os = "macos",
-        target_os = "linux",
-        target_os = "ios",
-        target_os = "android"
-    )))]
+    #[cfg(not(any(target_os = "windows", target_os = "linux")))]
     {
         Ok(true)
     }
@@ -83,29 +47,11 @@ pub fn is_badge_permission_granted() -> Result<bool, String> {
     {
         return crate::platform::win_impl::is_badge_permission_granted();
     }
-    #[cfg(target_os = "macos")]
-    {
-        return crate::platform::macos_impl::is_badge_permission_granted();
-    }
     #[cfg(target_os = "linux")]
     {
         return crate::platform::linux_impl::is_badge_permission_granted();
     }
-    #[cfg(target_os = "ios")]
-    {
-        return crate::platform::ios_impl::is_badge_permission_granted();
-    }
-    #[cfg(target_os = "android")]
-    {
-        return crate::platform::android_impl::is_badge_permission_granted();
-    }
-    #[cfg(not(any(
-        target_os = "windows",
-        target_os = "macos",
-        target_os = "linux",
-        target_os = "ios",
-        target_os = "android"
-    )))]
+    #[cfg(not(any(target_os = "windows", target_os = "linux")))]
     {
         Ok(true)
     }

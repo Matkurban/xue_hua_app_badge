@@ -5,57 +5,91 @@ import android.content.Context
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
+import io.flutter.plugin.common.MethodCall
+import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.PluginRegistry
 
 class XueHuaAppBadgePlugin :
     FlutterPlugin,
+    MethodChannel.MethodCallHandler,
     ActivityAware,
     PluginRegistry.RequestPermissionsResultListener {
-    companion object {
-        init {
-            System.loadLibrary("xue_hua_app_badge")
-        }
-
-        @JvmStatic
-        external fun initAndroid(context: Context)
-
-        @JvmStatic
-        external fun initActivity(activity: Activity)
-
-        @JvmStatic
-        external fun clearActivity()
-    }
-
+    private lateinit var applicationContext: Context
+    private lateinit var channel: MethodChannel
+    private var activity: Activity? = null
     private var activityBinding: ActivityPluginBinding? = null
 
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        initAndroid(binding.applicationContext)
+        applicationContext = binding.applicationContext
+        channel = MethodChannel(binding.binaryMessenger, "xue_hua_app_badge")
+        channel.setMethodCallHandler(this)
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        // Application context global ref is kept for the process lifetime.
+        channel.setMethodCallHandler(null)
+    }
+
+    override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
+        when (call.method) {
+            "setBadge" -> {
+                val count = call.argument<Int>("count") ?: 0
+                applyBadge(count, result)
+            }
+            "removeBadge" -> applyBadge(0, result)
+            "isPermissionGranted" -> {
+                result.success(
+                    PermissionHelper.isBadgePermissionGranted(applicationContext),
+                )
+            }
+            "requestPermission" -> {
+                val currentActivity = activity
+                if (currentActivity == null) {
+                    result.error(
+                        "NO_ACTIVITY",
+                        "Android activity not available; ensure Flutter activity is attached",
+                        null,
+                    )
+                    return
+                }
+                result.success(PermissionHelper.requestBadgePermission(currentActivity))
+            }
+            else -> result.notImplemented()
+        }
+    }
+
+    private fun applyBadge(count: Int, result: MethodChannel.Result) {
+        val applied = BadgeHelper.applyBadge(applicationContext, count)
+        if (applied) {
+            result.success(null)
+        } else {
+            result.error(
+                "BADGE_ERROR",
+                "BadgeHelper.applyBadge returned false",
+                null,
+            )
+        }
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
-        initActivity(binding.activity)
+        activity = binding.activity
         activityBinding = binding
         binding.addRequestPermissionsResultListener(this)
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
-        clearActivity()
+        activity = null
         activityBinding?.removeRequestPermissionsResultListener(this)
         activityBinding = null
     }
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
-        initActivity(binding.activity)
+        activity = binding.activity
         activityBinding = binding
         binding.addRequestPermissionsResultListener(this)
     }
 
     override fun onDetachedFromActivity() {
-        clearActivity()
+        activity = null
         activityBinding?.removeRequestPermissionsResultListener(this)
         activityBinding = null
     }

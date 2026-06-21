@@ -31,47 +31,52 @@ object BadgeHelper {
     }
 
     private fun applyNotificationFallback(context: Context, count: Int): Boolean {
-        val manager =
-            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        return try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                !PermissionHelper.isBadgePermissionGranted(context)
+            ) {
+                return false
+            }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel =
-                NotificationChannel(
-                    CHANNEL_ID,
-                    "App Badge",
-                    NotificationManager.IMPORTANCE_MIN,
-                ).apply {
-                    setShowBadge(true)
-                    enableLights(false)
-                    enableVibration(false)
-                    setSound(null, null)
-                }
-            manager.createNotificationChannel(channel)
+            val manager =
+                context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val channel =
+                    NotificationChannel(
+                        CHANNEL_ID,
+                        "App Badge",
+                        NotificationManager.IMPORTANCE_MIN,
+                    ).apply {
+                        setShowBadge(true)
+                        enableLights(false)
+                        enableVibration(false)
+                        setSound(null, null)
+                    }
+                manager.createNotificationChannel(channel)
+            }
+
+            if (count <= 0) {
+                manager.cancel(NOTIFICATION_ID)
+                return true
+            }
+
+            val notification =
+                NotificationCompat.Builder(context, CHANNEL_ID)
+                    .setSmallIcon(R.drawable.ic_badge_notification)
+                    .setContentTitle(" ")
+                    .setContentText(" ")
+                    .setNumber(count)
+                    .setShowWhen(false)
+                    .setOnlyAlertOnce(true)
+                    .setSilent(true)
+                    .setPriority(NotificationCompat.PRIORITY_MIN)
+                    .build()
+
+            manager.notify(NOTIFICATION_ID, notification)
+            true
+        } catch (_: Exception) {
+            false
         }
-
-        if (count <= 0) {
-            manager.cancel(NOTIFICATION_ID)
-            return true
-        }
-
-        val notification =
-            NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(resolveSmallIcon(context))
-                .setContentTitle("")
-                .setContentText("")
-                .setNumber(count)
-                .setShowWhen(false)
-                .setOnlyAlertOnce(true)
-                .setSilent(true)
-                .setPriority(NotificationCompat.PRIORITY_MIN)
-                .build()
-
-        manager.notify(NOTIFICATION_ID, notification)
-        return true
-    }
-
-    private fun resolveSmallIcon(context: Context): Int {
-        val iconId = context.applicationInfo.icon
-        return if (iconId != 0) iconId else android.R.drawable.sym_def_app_icon
     }
 }

@@ -33,8 +33,6 @@ android {
 
     compileSdkVersion 34
 
-    ndkVersion android.ndkVersion
-
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -53,10 +51,4 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'androidx.core:core-ktx:1.13.1'
     implementation 'me.leolin:ShortcutBadger:1.1.22@aar'
-}
-
-apply from: "../cargokit/gradle/plugin.gradle"
-cargokit {
-    manifestDir = "../rust"
-    libname = "xue_hua_app_badge"
 }

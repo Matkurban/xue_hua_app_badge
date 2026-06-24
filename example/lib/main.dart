@@ -3,7 +3,7 @@ import 'package:xue_hua_app_badge/xue_hua_app_badge.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await RustLib.init();
+  await XueHuaAppBadge.initialize();
   runApp(const MyApp());
 }
 

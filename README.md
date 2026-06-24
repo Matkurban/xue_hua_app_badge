@@ -4,7 +4,7 @@
 
 ## 特性
 
-- 统一 API：`XueHuaAppBadge.set(count)` / `XueHuaAppBadge.remove()` / `XueHuaAppBadge.requestPermission()` / `XueHuaAppBadge.isPermissionGranted()`
+- 统一 API：`XueHuaAppBadge.initialize()` / `XueHuaAppBadge.set(count)` / `XueHuaAppBadge.remove()` / `XueHuaAppBadge.requestPermission()` / `XueHuaAppBadge.isPermissionGranted()`
 - 底层逻辑在 Rust 中按平台条件编译（`#[cfg(target_os = "...")]`）
 - 支持 Android、iOS、macOS、Windows、Linux 五端（Cargokit 自动编译 Rust）
 - 数字超过 99 时：macOS 显示 `99+` 文本；其他平台显示 `99`
@@ -23,8 +23,7 @@
 
 ```yaml
 dependencies:
-  xue_hua_app_badge:
-    path: ../xue_hua_app_badge
+  xue_hua_app_badge: ^1.0.1
 ```
 
 ### 环境要求
@@ -42,16 +41,17 @@ import 'package:xue_hua_app_badge/xue_hua_app_badge.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await RustLib.init();
+  await XueHuaAppBadge.initialize();
   runApp(const MyApp());
+}
+
+// iOS 16+ / Android 13+ 建议先请求权限
+if (!XueHuaAppBadge.isPermissionGranted()) {
+  XueHuaAppBadge.requestPermission();
 }
 
 XueHuaAppBadge.set(5);
 XueHuaAppBadge.remove();
-
-// iOS 16+ / Android 13+ 建议先请求权限
-final granted = XueHuaAppBadge.requestPermission();
-final alreadyGranted = XueHuaAppBadge.isPermissionGranted();
 ```
 
 ### iOS / Android：Badge 权限
@@ -106,7 +106,7 @@ try {
 ## 架构
 
 ```
-Dart (XueHuaAppBadge)
+Dart (XueHuaAppBadge.initialize → RustLib.init)
     ↓ flutter_rust_bridge
 rust/src/api/badge.rs
     ↓ #[cfg]

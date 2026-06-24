@@ -1,6 +1,7 @@
 library;
 
 import 'src/rust/api/badge.dart';
+import 'src/rust/frb_generated.dart';
 
 export 'src/rust/api/badge.dart'
     show
@@ -9,11 +10,15 @@ export 'src/rust/api/badge.dart'
         requestBadgePermission,
         setBadge;
 export 'src/rust/api/simple.dart' show greet;
-export 'src/rust/frb_generated.dart' show RustLib;
 
 /// Unified Dart wrapper for the Rust badge API.
+///
+/// Call [initialize] once at app startup before using any other methods.
 class XueHuaAppBadge {
   const XueHuaAppBadge._();
+
+  /// Initializes the Rust FFI bridge. Must be called before any badge API.
+  static Future<void> initialize() => RustLib.init();
 
   static void set(int count, {int? windowHandle}) {
     setBadge(count: count, windowHandle: windowHandle);

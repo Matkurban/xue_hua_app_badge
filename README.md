@@ -1,39 +1,41 @@
+**English** | [简体中文](README.zh-CN.md)
+
 # xue_hua_app_badge
 
-跨平台 Flutter 应用角标（Badge）插件。核心逻辑在 **Rust** 中实现，通过 [flutter_rust_bridge](https://github.com/fzyzcjy/flutter_rust_bridge) v2 与 Dart 通信；Android 侧仅保留极薄的 Kotlin 引导层（Context 初始化 + ShortcutBadger）。
+Cross-platform Flutter app badge plugin. Core logic is implemented in **Rust** and exposed to Dart via [flutter_rust_bridge](https://github.com/fzyzcjy/flutter_rust_bridge) v2. On Android, a thin Kotlin layer handles [`ndk-context`](https://docs.rs/ndk-context) initialization, `BadgeHelper` (ShortcutBadger + notification fallback), and `PermissionHelper` (Android 13+ permissions).
 
-## 特性
+## Features
 
-- 统一 API：`XueHuaAppBadge.initialize()` / `XueHuaAppBadge.set(count)` / `XueHuaAppBadge.remove()` / `XueHuaAppBadge.requestPermission()` / `XueHuaAppBadge.isPermissionGranted()`
-- 底层逻辑在 Rust 中按平台条件编译（`#[cfg(target_os = "...")]`）
-- 支持 Android、iOS、macOS、Windows、Linux 五端（Cargokit 自动编译 Rust）
-- 数字超过 99 时：macOS 显示 `99+` 文本；其他平台显示 `99`
+- Unified API: `XueHuaAppBadge.initialize()` / `XueHuaAppBadge.set(count)` / `XueHuaAppBadge.remove()` / `XueHuaAppBadge.requestPermission()` / `XueHuaAppBadge.isPermissionGranted()`
+- Platform-specific logic compiled in Rust via `#[cfg(target_os = "...")]`
+- Android, iOS, macOS, Windows, and Linux (Rust built automatically by Cargokit)
+- Counts above 99: macOS shows `99+` text; other platforms cap at `99`
 
-## 平台支持
+## Platform Support
 
-| 平台 | 机制 | 状态 |
-|------|------|------|
-| **macOS** | `NSApplication.dockTile.setBadgeLabel` | ✅ 已实现 |
-| **Windows** | `ITaskbarList3::SetOverlayIcon`（COM + GDI） | ✅ 已实现 |
-| **Linux** | D-Bus `com.canonical.Unity.LauncherEntry`（Ubuntu / GNOME / KDE Plasma） | ✅ 已实现 |
-| **iOS** | iOS 16+ `UNUserNotificationCenter.setBadgeCount`；低版本 `UIApplication.applicationIconBadgeNumber` | ✅ 已实现 |
-| **Android** | JNI + ShortcutBadger + NotificationChannel 静默回退（API 26+） | ✅ 已实现 |
+| Platform | Mechanism | Status |
+|----------|-----------|--------|
+| **macOS** | `NSApplication.dockTile.setBadgeLabel` | Implemented |
+| **Windows** | `ITaskbarList3::SetOverlayIcon` (COM + GDI) | Implemented |
+| **Linux** | D-Bus `com.canonical.Unity.LauncherEntry` (Ubuntu / GNOME / KDE Plasma) | Implemented |
+| **iOS** | iOS 16+ `UNUserNotificationCenter.setBadgeCount`; older `UIApplication.applicationIconBadgeNumber` | Implemented |
+| **Android** | ndk-context + JNI + ShortcutBadger + silent NotificationChannel fallback (API 26+) | Implemented |
 
-## 安装
+## Installation
 
 ```yaml
 dependencies:
-  xue_hua_app_badge: ^1.0.1
+  xue_hua_app_badge: ^1.0.2
 ```
 
-### 环境要求
+### Requirements
 
-- Flutter >= 3.3.0，Dart SDK ^3.12.2
-- **Rust** 工具链（[rustup](https://rustup.rs/)）
-- 各平台常规 Flutter 开发环境
-- 修改 Rust API 后：`cargo install flutter_rust_bridge_codegen`
+- Flutter >= 3.3.0, Dart SDK ^3.12.2
+- [rustup](https://rustup.rs/) with the `stable` toolchain (see [Rust Build Requirements](#rust-build-requirements))
+- Standard Flutter tooling for each target platform
+- After changing the Rust public API: `cargo install flutter_rust_bridge_codegen`
 
-## 快速开始
+## Quick Start
 
 ```dart
 import 'package:flutter/material.dart';
@@ -45,7 +47,7 @@ Future<void> main() async {
   runApp(const MyApp());
 }
 
-// iOS 16+ / Android 13+ 建议先请求权限
+// Recommended on iOS 16+ / Android 13+
 if (!XueHuaAppBadge.isPermissionGranted()) {
   XueHuaAppBadge.requestPermission();
 }
@@ -54,46 +56,46 @@ XueHuaAppBadge.set(5);
 XueHuaAppBadge.remove();
 ```
 
-### iOS / Android：Badge 权限
+### iOS / Android: Badge Permissions
 
-插件提供显式权限 API（**不会在 `set()` 时自动弹窗**）：
+The plugin exposes explicit permission APIs (**no automatic prompt on `set()`**):
 
-| 平台 | 权限 | 说明 |
-|------|------|------|
-| **iOS 16+** | 通知 Badge 授权 | `requestPermission()` 弹出系统对话框 |
-| **Android 13+** | `POST_NOTIFICATIONS` | 通知回退路径需要；API 32 及以下直接返回 `true` |
-| **macOS / Windows / Linux** | 无 | 恒返回 `true` |
+| Platform | Permission | Notes |
+|----------|------------|-------|
+| **iOS 16+** | Notification badge authorization | `requestPermission()` shows the system dialog |
+| **Android 13+** | `POST_NOTIFICATIONS` | Required for the notification fallback path; API 32 and below always return `true` |
+| **macOS / Windows / Linux** | None | Always return `true` |
 
 ```dart
 if (!XueHuaAppBadge.isPermissionGranted()) {
   final granted = XueHuaAppBadge.requestPermission();
   if (!granted) {
-    // 用户拒绝，可提示前往系统设置
+    // User denied — guide them to system settings
   }
 }
 XueHuaAppBadge.set(count);
 ```
 
-### Linux：Desktop 文件 ID
+### Linux: Desktop File ID
 
-Linux 通过 Unity LauncherEntry 协议更新任务栏角标，需要能解析 `.desktop` 文件 ID：
+Linux uses the Unity LauncherEntry protocol and needs a resolvable `.desktop` file ID:
 
-1. 从桌面快捷方式启动时，系统自动设置 `GIO_LAUNCHED_DESKTOP_FILE`
-2. 否则在 Linux runner 中设置 `GAPPLICATION_ID`（example 已配置）：
+1. When launched from a desktop shortcut, the system sets `GIO_LAUNCHED_DESKTOP_FILE`
+2. Otherwise set `GAPPLICATION_ID` in the Linux runner (configured in the example app):
 
 ```cpp
 g_setenv("GAPPLICATION_ID", APPLICATION_ID, TRUE);
 ```
 
-### Windows：窗口句柄（可选）
+### Windows: Window Handle (Optional)
 
 ```dart
 XueHuaAppBadge.set(3, windowHandle: hwnd);
 ```
 
-未传入时 Rust 回退到 `GetActiveWindow()`。
+When omitted, Rust falls back to `GetActiveWindow()`.
 
-### 错误处理
+### Error Handling
 
 ```dart
 try {
@@ -103,7 +105,7 @@ try {
 }
 ```
 
-## 架构
+## Architecture
 
 ```
 Dart (XueHuaAppBadge.initialize → RustLib.init)
@@ -113,51 +115,68 @@ rust/src/api/badge.rs
 platform/win_impl.rs      ← Windows ITaskbarList3
 platform/macos_impl.rs    ← macOS NSDockTile
 platform/ios_impl.rs      ← iOS UNUserNotificationCenter / UIApplication
-platform/android_impl.rs  ← JNI → BadgeHelper.kt
+platform/android_impl.rs  ← ndk-context → JNI → BadgeHelper.kt
 platform/linux_impl.rs    ← zbus Unity LauncherEntry
 ```
 
-AppKit / UIKit 调用通过 `dispatch2` 派发到主线程。Android 通过 `XueHuaAppBadgePlugin` 在启动时注入 `Context`。
+AppKit / UIKit calls are dispatched to the main thread via `dispatch2`. On Android, context is provided by [`ndk-context`](https://docs.rs/ndk-context); `XueHuaAppBadgePlugin` calls `initialize_android_context` at startup and manages the Activity lifecycle for permissions.
 
-## 本地开发
+## Rust Build Requirements
 
-```bash
-cd example && flutter pub get
-flutter run -d macos
-flutter run -d windows
-flutter run -d linux
-flutter run -d ios
-flutter run -d android
-```
+This plugin uses [Cargokit](https://github.com/irondash/cargokit) to compile Rust automatically during `flutter run` / `flutter build`. **You do not need to run `cargo ndk` manually.**
 
-修改 Rust API 后：
+### All Platforms
+
+- Install [rustup](https://rustup.rs/) and ensure the `stable` toolchain is on your PATH
+- Flutter >= 3.3.0, Dart ^3.12.2
+- On first build, Cargokit installs required cross-compilation targets via `rustup target add`
+- After changing the Rust public API:
 
 ```bash
 flutter_rust_bridge_codegen generate
-cd rust && cargo check
+cd rust && cargo check   # validates the host platform only
 ```
 
-## 已知限制
+### Per Platform
 
-- **Windows**：小任务栏模式下 `SetOverlayIcon` 无效
-- **Windows**：`GetActiveWindow()` 对多窗口不可靠
-- **macOS**：仅 Dock 角标
-- **iOS**：iOS 16+ 需先调用 `requestPermission()`；未授权时 `set()` 可能失败
-- **Android**：Android 13+ 建议先调用 `requestPermission()`；部分 Launcher 不支持 ShortcutBadger
-- **Linux**：仅 Unity LauncherEntry 协议；i3/sway 等极简 WM 不支持
+| Platform | Additional Requirements |
+|----------|-------------------------|
+| **Android** | Android SDK + **NDK**; host app `build.gradle` must set `android.ndkVersion` (Cargokit fails otherwise); builds `armv7-linux-androideabi`, `aarch64-linux-android`, `i686-linux-android`, `x86_64-linux-android` |
+| **iOS / macOS** | Xcode + Apple toolchain |
+| **Windows** | Visual Studio Build Tools (MSVC) |
+| **Linux** | `gcc`/`clang`; system D-Bus required at runtime (zbus) |
 
-## 依赖概览
+### Common Build Failures
 
-| 组件 | 用途 |
-|------|------|
+| Error | Fix |
+|-------|-----|
+| `rustup not found` | Install rustup and restart your terminal |
+| `Please set 'android.ndkVersion'` | Set NDK version in the app-level `android/app/build.gradle` |
+| `android context was not initialized` | Add the plugin via `pubspec.yaml` (no manual MethodChannel needed) |
+| Dart errors after Rust API changes | Re-run `flutter_rust_bridge_codegen generate` |
+
+## Known Limitations
+
+- **Windows**: `SetOverlayIcon` does not work in small taskbar mode
+- **Windows**: `GetActiveWindow()` is unreliable with multiple windows
+- **macOS**: Dock badge only
+- **iOS**: iOS 16+ requires `requestPermission()` first; `set()` may fail without authorization
+- **Android**: Android 13+ should call `requestPermission()` first; some launchers do not support ShortcutBadger
+- **Linux**: Unity LauncherEntry protocol only; minimal WMs like i3/sway are not supported
+
+## Dependencies
+
+| Component | Purpose |
+|-----------|---------|
 | `flutter_rust_bridge` 2.12.0 | Dart ↔ Rust |
 | `windows` 0.62 | Windows COM / GDI |
 | `objc2` + AppKit / UIKit / UserNotifications | macOS / iOS |
 | `zbus` 5.x | Linux D-Bus |
 | `jni` 0.22 | Android JNI |
-| ShortcutBadger 1.1.22 | Android 厂商 Launcher |
-| Cargokit | 跨平台 Rust 构建 |
+| `ndk-context` 0.1.1 | Android Context / JavaVM |
+| ShortcutBadger 1.1.22 | Android OEM launchers |
+| Cargokit | Cross-platform Rust builds |
 
 ## License
 
-见仓库根目录 LICENSE 文件（如有）。
+See the LICENSE file in the repository root.

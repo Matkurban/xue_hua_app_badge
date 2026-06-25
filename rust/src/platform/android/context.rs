@@ -1,11 +1,26 @@
 use jni::objects::{Global, JClass, JObject, JValue};
 use jni::sys::jint;
 use jni::{errors::Result as JniResult, jni_sig, jni_str, EnvUnowned, JavaVM};
+use std::ffi::c_void;
 use std::sync::{Arc, Mutex, OnceLock};
 
-static CONTEXT: OnceLock<Global<JObject>> = OnceLock::new();
+/// Keeps the application Context alive after passing its raw pointer to ndk-context.
+static CONTEXT_HOLDER: OnceLock<Global<JObject>> = OnceLock::new();
 static ACTIVITY: Mutex<Option<Arc<Global<JObject>>>> = Mutex::new(None);
-static JVM: OnceLock<JavaVM> = OnceLock::new();
+
+fn ensure_initialized() -> Result<(), String> {
+    if CONTEXT_HOLDER.get().is_some() {
+        Ok(())
+    } else {
+        Err("android context was not initialized".into())
+    }
+}
+
+fn java_vm() -> Result<JavaVM, String> {
+    ensure_initialized()?;
+    let ctx = ndk_context::android_context();
+    Ok(unsafe { JavaVM::from_raw(ctx.vm().cast()) })
+}
 
 #[no_mangle]
 pub extern "system" fn Java_com_flutter_1rust_1bridge_xue_1hua_1app_1badge_XueHuaAppBadgePlugin_initAndroid<
@@ -16,10 +31,17 @@ pub extern "system" fn Java_com_flutter_1rust_1bridge_xue_1hua_1app_1badge_XueHu
     context: JObject<'local>,
 ) {
     let _ = unowned_env.with_env(|env| -> JniResult<()> {
+        if CONTEXT_HOLDER.get().is_some() {
+            return Ok(());
+        }
         let global_ref = env.new_global_ref(context)?;
         let vm = env.get_java_vm()?;
-        let _ = JVM.set(vm);
-        let _ = CONTEXT.set(global_ref);
+        let vm_ptr = vm.get_raw() as *mut c_void;
+        let ctx_ptr = global_ref.as_obj().as_raw() as *mut c_void;
+        unsafe {
+            ndk_context::initialize_android_context(vm_ptr, ctx_ptr);
+        }
+        let _ = CONTEXT_HOLDER.set(global_ref);
         Ok(())
     });
 }
@@ -49,30 +71,20 @@ pub extern "system" fn Java_com_flutter_1rust_1bridge_xue_1hua_1app_1badge_XueHu
     *ACTIVITY.lock().unwrap() = None;
 }
 
-pub fn is_initialized() -> bool {
-    CONTEXT.get().is_some()
-}
-
 pub fn call_badge_helper(count: i32) -> Result<(), String> {
-    let vm = JVM
-        .get()
-        .ok_or("Android JavaVM not initialized; ensure XueHuaAppBadgePlugin is registered")?;
-    let context = CONTEXT
-        .get()
-        .ok_or("Android context not initialized; ensure XueHuaAppBadgePlugin is registered")?;
+    let vm = java_vm()?;
+    let ctx_raw = ndk_context::android_context().context().cast();
 
     let badge_count = count.min(99).max(0);
 
     let applied = vm
         .attach_current_thread(|env| -> JniResult<bool> {
+            let context = unsafe { JObject::from_raw(env, ctx_raw) };
             env.call_static_method(
                 jni_str!("com/flutter_rust_bridge/xue_hua_app_badge/BadgeHelper"),
                 jni_str!("applyBadge"),
                 jni_sig!("(Landroid/content/Context;I)Z"),
-                &[
-                    JValue::Object(context.as_ref()),
-                    JValue::Int(badge_count as jint),
-                ],
+                &[JValue::Object(&context), JValue::Int(badge_count as jint)],
             )?
             .z()
         })
@@ -86,19 +98,16 @@ pub fn call_badge_helper(count: i32) -> Result<(), String> {
 }
 
 pub fn call_is_badge_permission_granted() -> Result<bool, String> {
-    let vm = JVM
-        .get()
-        .ok_or("Android JavaVM not initialized; ensure XueHuaAppBadgePlugin is registered")?;
-    let context = CONTEXT
-        .get()
-        .ok_or("Android context not initialized; ensure XueHuaAppBadgePlugin is registered")?;
+    let vm = java_vm()?;
+    let ctx_raw = ndk_context::android_context().context().cast();
 
     vm.attach_current_thread(|env| -> JniResult<bool> {
+        let context = unsafe { JObject::from_raw(env, ctx_raw) };
         env.call_static_method(
             jni_str!("com/flutter_rust_bridge/xue_hua_app_badge/PermissionHelper"),
             jni_str!("isBadgePermissionGranted"),
             jni_sig!("(Landroid/content/Context;)Z"),
-            &[JValue::Object(context.as_ref())],
+            &[JValue::Object(&context)],
         )?
         .z()
     })
@@ -106,9 +115,7 @@ pub fn call_is_badge_permission_granted() -> Result<bool, String> {
 }
 
 pub fn call_request_badge_permission() -> Result<bool, String> {
-    let vm = JVM
-        .get()
-        .ok_or("Android JavaVM not initialized; ensure XueHuaAppBadgePlugin is registered")?;
+    let vm = java_vm()?;
     let activity = ACTIVITY
         .lock()
         .unwrap()

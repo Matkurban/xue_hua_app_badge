@@ -1,12 +1,14 @@
+use jni::errors::LogContextErrorAndDefault;
 use jni::objects::{Global, JClass, JObject, JValue};
 use jni::sys::jint;
-use jni::{errors::Result as JniResult, jni_sig, jni_str, EnvUnowned, JavaVM};
+use jni::{EnvUnowned, JavaVM, errors::Result as JniResult, jni_sig, jni_str};
 use std::ffi::c_void;
-use std::sync::{Arc, Mutex, OnceLock};
+use std::sync::{Arc, Mutex, Once, OnceLock};
 
 /// Keeps the application Context alive after passing its raw pointer to ndk-context.
 static CONTEXT_HOLDER: OnceLock<Global<JObject>> = OnceLock::new();
 static ACTIVITY: Mutex<Option<Arc<Global<JObject>>>> = Mutex::new(None);
+static ANDROID_CONTEXT_INIT: Once = Once::new();
 
 fn ensure_initialized() -> Result<(), String> {
     if CONTEXT_HOLDER.get().is_some() {
@@ -22,7 +24,7 @@ fn java_vm() -> Result<JavaVM, String> {
     Ok(unsafe { JavaVM::from_raw(ctx.vm().cast()) })
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "system" fn Java_com_flutter_1rust_1bridge_xue_1hua_1app_1badge_XueHuaAppBadgePlugin_initAndroid<
     'local,
 >(
@@ -30,23 +32,26 @@ pub extern "system" fn Java_com_flutter_1rust_1bridge_xue_1hua_1app_1badge_XueHu
     _class: JClass<'local>,
     context: JObject<'local>,
 ) {
-    let _ = unowned_env.with_env(|env| -> JniResult<()> {
-        if CONTEXT_HOLDER.get().is_some() {
-            return Ok(());
-        }
-        let global_ref = env.new_global_ref(context)?;
-        let vm = env.get_java_vm()?;
-        let vm_ptr = vm.get_raw() as *mut c_void;
-        let ctx_ptr = global_ref.as_obj().as_raw() as *mut c_void;
-        unsafe {
-            ndk_context::initialize_android_context(vm_ptr, ctx_ptr);
-        }
-        let _ = CONTEXT_HOLDER.set(global_ref);
-        Ok(())
+    ANDROID_CONTEXT_INIT.call_once(|| {
+        unowned_env
+            .with_env(|env| -> JniResult<()> {
+                let global_ref = env.new_global_ref(context)?;
+                let vm = env.get_java_vm()?;
+                let vm_ptr = vm.get_raw() as *mut c_void;
+                let ctx_ptr = global_ref.as_obj().as_raw() as *mut c_void;
+                unsafe {
+                    ndk_context::initialize_android_context(vm_ptr, ctx_ptr);
+                }
+                let _ = CONTEXT_HOLDER.set(global_ref);
+                Ok(())
+            })
+            .resolve_with::<LogContextErrorAndDefault, _>(|| {
+                "[xue_hua_app_badge] initAndroid".to_string()
+            });
     });
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "system" fn Java_com_flutter_1rust_1bridge_xue_1hua_1app_1badge_XueHuaAppBadgePlugin_initActivity<
     'local,
 >(
@@ -54,21 +59,25 @@ pub extern "system" fn Java_com_flutter_1rust_1bridge_xue_1hua_1app_1badge_XueHu
     _class: JClass<'local>,
     activity: JObject<'local>,
 ) {
-    let _ = unowned_env.with_env(|env| -> JniResult<()> {
-        let global_ref = env.new_global_ref(activity)?;
-        *ACTIVITY.lock().unwrap() = Some(Arc::new(global_ref));
-        Ok(())
-    });
+    unowned_env
+        .with_env(|env| -> JniResult<()> {
+            let global_ref = env.new_global_ref(activity)?;
+            *ACTIVITY.lock().unwrap_or_else(|e| e.into_inner()) = Some(Arc::new(global_ref));
+            Ok(())
+        })
+        .resolve_with::<LogContextErrorAndDefault, _>(|| {
+            "[xue_hua_app_badge] initActivity".to_string()
+        });
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "system" fn Java_com_flutter_1rust_1bridge_xue_1hua_1app_1badge_XueHuaAppBadgePlugin_clearActivity<
     'local,
 >(
     _unowned_env: EnvUnowned<'local>,
     _class: JClass<'local>,
 ) {
-    *ACTIVITY.lock().unwrap() = None;
+    *ACTIVITY.lock().unwrap_or_else(|e| e.into_inner()) = None;
 }
 
 pub fn call_badge_helper(count: i32) -> Result<(), String> {
@@ -118,7 +127,7 @@ pub fn call_request_badge_permission() -> Result<bool, String> {
     let vm = java_vm()?;
     let activity = ACTIVITY
         .lock()
-        .unwrap()
+        .unwrap_or_else(|e| e.into_inner())
         .clone()
         .ok_or("Android activity not available; ensure Flutter activity is attached")?;
 

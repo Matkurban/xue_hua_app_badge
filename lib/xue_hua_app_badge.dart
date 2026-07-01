@@ -9,7 +9,6 @@ export 'src/rust/api/badge.dart'
         removeBadge,
         requestBadgePermission,
         setBadge;
-export 'src/rust/api/simple.dart' show greet;
 
 /// Unified Dart wrapper for the Rust badge API.
 ///

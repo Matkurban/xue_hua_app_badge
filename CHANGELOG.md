@@ -1,14 +1,25 @@
+## 1.0.3
+
+* iOS: Fix main-thread Condvar deadlock on iOS 16+; add `ios_async` RunLoop bridge module
+* iOS: `isPermissionGranted()` now checks `badgeSetting`, not only `authorizationStatus`
+* Android: Fix concurrent `requestPermission()` race (single-flight + requestId)
+* Android: Retain Activity reference during configuration changes to avoid interrupting permission dialogs
+* Android: Use `Once` for JNI initialization; log failures to logcat
+* Rust: Add `initialize()` guard for badge APIs; unit tests for `format_badge_label` / `badge_number`
+* Dart: Remove public `greet()` export; add badge integration tests
+* Docs: Add `CONTEXT.md` domain glossary
+
 ## 1.0.2
 
-* Android：Context/JavaVM 迁移至 `ndk-context 0.1.1`，简化 Rust 上下文管理
-* Android：修复 `jni 0.22` API 不兼容导致的编译错误
-* 文档：新增 `README.zh-CN.md`，中英文 README 互相导航
-* 文档：补充 Rust / Cargokit 各平台编译条件与常见错误说明
+* Android: Migrate Context/JavaVM to `ndk-context 0.1.1`, simplifying Rust context management
+* Android: Fix compilation errors from `jni 0.22` API incompatibility
+* Docs: Add `README.zh-CN.md` with cross-links between English and Chinese READMEs
+* Docs: Document Rust / Cargokit build requirements and common errors per platform
 
 ## 1.0.1
 
-* 首个稳定发布
-* 新增 `XueHuaAppBadge.initialize()` 作为统一初始化入口
-* 不再对外导出 `RustLib`；请使用 `XueHuaAppBadge` 公开 API
-* 支持 Android、iOS、macOS、Windows、Linux 五端角标与权限 API
-* 修正 README 安装与快速开始示例
+* First stable release
+* Add `XueHuaAppBadge.initialize()` as the unified initialization entry point
+* Stop exporting `RustLib` publicly; use the `XueHuaAppBadge` public API instead
+* Support badge and permission APIs on Android, iOS, macOS, Windows, and Linux
+* Fix README installation and quick-start examples

@@ -9,15 +9,24 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicLong
 
 object PermissionHelper {
     private const val REQUEST_CODE = 0x5876
+    private const val TIMEOUT_SECONDS = 30L
+
+    private val nextRequestId = AtomicLong(0)
+
+    private val lock = Any()
 
     @Volatile
-    private var pendingLatch: CountDownLatch? = null
+    private var inFlight: InFlightRequest? = null
 
-    @Volatile
-    private var pendingResult: Boolean = false
+    private data class InFlightRequest(
+        val id: Long,
+        val latch: CountDownLatch,
+        var result: Boolean = false,
+    )
 
     @JvmStatic
     fun isBadgePermissionGranted(context: Context): Boolean {
@@ -39,9 +48,24 @@ object PermissionHelper {
             return true
         }
 
-        val latch = CountDownLatch(1)
-        pendingLatch = latch
-        pendingResult = false
+        val (request, isOwner) = synchronized(lock) {
+            val active = inFlight
+            if (active != null) {
+                Pair(active, false)
+            } else {
+                val newRequest = InFlightRequest(
+                    id = nextRequestId.incrementAndGet(),
+                    latch = CountDownLatch(1),
+                )
+                inFlight = newRequest
+                Pair(newRequest, true)
+            }
+        }
+
+        if (!isOwner) {
+            request.latch.await(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            return isBadgePermissionGranted(activity)
+        }
 
         ActivityCompat.requestPermissions(
             activity,
@@ -49,9 +73,15 @@ object PermissionHelper {
             REQUEST_CODE,
         )
 
-        latch.await(30, TimeUnit.SECONDS)
-        pendingLatch = null
-        return pendingResult
+        request.latch.await(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+
+        synchronized(lock) {
+            if (inFlight?.id == request.id) {
+                inFlight = null
+            }
+        }
+
+        return request.result
     }
 
     fun onRequestPermissionsResult(
@@ -62,9 +92,17 @@ object PermissionHelper {
         if (requestCode != REQUEST_CODE) {
             return false
         }
-        pendingResult = grantResults.isNotEmpty() &&
+
+        val granted = grantResults.isNotEmpty() &&
             grantResults[0] == PackageManager.PERMISSION_GRANTED
-        pendingLatch?.countDown()
+
+        synchronized(lock) {
+            inFlight?.let { request ->
+                request.result = granted
+                request.latch.countDown()
+                inFlight = null
+            }
+        }
         return true
     }
 }

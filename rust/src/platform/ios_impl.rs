@@ -1,14 +1,15 @@
 use block2::RcBlock;
 use core::ptr::NonNull;
 use dispatch2::DispatchQueue;
-use objc2::runtime::Bool;
 use objc2::MainThreadMarker;
+use objc2::runtime::Bool;
 use objc2_foundation::NSError;
 use objc2_ui_kit::{UIApplication, UIDevice};
 use objc2_user_notifications::{
-    UNAuthorizationOptions, UNAuthorizationStatus, UNNotificationSettings, UNUserNotificationCenter,
+    UNAuthorizationOptions, UNAuthorizationStatus, UNNotificationSetting, UNNotificationSettings,
+    UNUserNotificationCenter,
 };
-use std::sync::{Arc, Condvar, Mutex};
+use std::sync::{Arc, Mutex};
 
 pub fn set_badge(count: i32) -> Result<(), String> {
     run_on_main_thread(move || set_badge_on_main_thread(count))
@@ -69,29 +70,23 @@ fn ios_16_or_later(mtm: MainThreadMarker) -> bool {
 }
 
 fn set_badge_modern(badge_number: i32) -> Result<(), String> {
-    let center = UNUserNotificationCenter::currentNotificationCenter();
-    let wait = Arc::new((Mutex::new(None), Condvar::new()));
-    let wait_clone = Arc::clone(&wait);
-
-    let block = RcBlock::new(move |error: *mut NSError| {
-        let output = if error.is_null() {
-            Ok(())
-        } else {
-            Err(format!("setBadgeCount failed: {error:?}"))
-        };
-        let (lock, cvar) = &*wait_clone;
-        *lock.lock().unwrap() = Some(output);
-        cvar.notify_one();
-    });
-
-    center.setBadgeCount_withCompletionHandler(badge_number as _, Some(&block));
-
-    let (lock, cvar) = &*wait;
-    let mut guard = lock.lock().unwrap();
-    while guard.is_none() {
-        guard = cvar.wait(guard).unwrap();
-    }
-    guard.take().unwrap()
+    super::ios_async::wait_for_async_completion(|complete| {
+        let complete = Arc::new(Mutex::new(Some(complete)));
+        let complete_clone = Arc::clone(&complete);
+        let center = UNUserNotificationCenter::currentNotificationCenter();
+        let block = RcBlock::new(move |error: *mut NSError| {
+            let output = if error.is_null() {
+                Ok(())
+            } else {
+                Err(format!("setBadgeCount failed: {error:?}"))
+            };
+            if let Some(done) = complete_clone.lock().unwrap().take() {
+                done(output);
+            }
+        });
+        center.setBadgeCount_withCompletionHandler(badge_number as _, Some(&block));
+    })
+    .and_then(|inner| inner)
 }
 
 #[allow(deprecated)]
@@ -107,24 +102,20 @@ fn request_badge_permission_on_main_thread() -> Result<bool, String> {
         return Ok(true);
     }
 
-    let center = UNUserNotificationCenter::currentNotificationCenter();
-    let wait = Arc::new((Mutex::new(None::<bool>), Condvar::new()));
-    let wait_clone = Arc::clone(&wait);
-
-    let block = RcBlock::new(move |granted: Bool, _error: *mut NSError| {
-        let (lock, cvar) = &*wait_clone;
-        *lock.lock().unwrap() = Some(granted.as_bool());
-        cvar.notify_one();
-    });
-
-    center.requestAuthorizationWithOptions_completionHandler(UNAuthorizationOptions::Badge, &block);
-
-    let (lock, cvar) = &*wait;
-    let mut guard = lock.lock().unwrap();
-    while guard.is_none() {
-        guard = cvar.wait(guard).unwrap();
-    }
-    Ok(guard.take().unwrap())
+    super::ios_async::wait_for_async_completion(|complete| {
+        let complete = Arc::new(Mutex::new(Some(complete)));
+        let complete_clone = Arc::clone(&complete);
+        let center = UNUserNotificationCenter::currentNotificationCenter();
+        let block = RcBlock::new(move |granted: Bool, _error: *mut NSError| {
+            if let Some(done) = complete_clone.lock().unwrap().take() {
+                done(granted.as_bool());
+            }
+        });
+        center.requestAuthorizationWithOptions_completionHandler(
+            UNAuthorizationOptions::Badge,
+            &block,
+        );
+    })
 }
 
 fn is_badge_permission_granted_on_main_thread() -> Result<bool, String> {
@@ -133,26 +124,23 @@ fn is_badge_permission_granted_on_main_thread() -> Result<bool, String> {
         return Ok(true);
     }
 
-    let center = UNUserNotificationCenter::currentNotificationCenter();
-    let wait = Arc::new((Mutex::new(None::<bool>), Condvar::new()));
-    let wait_clone = Arc::clone(&wait);
+    super::ios_async::wait_for_async_completion(|complete| {
+        let complete = Arc::new(Mutex::new(Some(complete)));
+        let complete_clone = Arc::clone(&complete);
+        let center = UNUserNotificationCenter::currentNotificationCenter();
+        let block = RcBlock::new(move |settings_ptr: NonNull<UNNotificationSettings>| {
+            let settings = unsafe { settings_ptr.as_ref() };
+            if let Some(done) = complete_clone.lock().unwrap().take() {
+                done(badge_permission_granted(settings));
+            }
+        });
+        center.getNotificationSettingsWithCompletionHandler(&block);
+    })
+}
 
-    let block = RcBlock::new(move |settings_ptr: NonNull<UNNotificationSettings>| {
-        let settings = unsafe { settings_ptr.as_ref() };
-        let status = settings.authorizationStatus();
-        let granted = status == UNAuthorizationStatus::Authorized
-            || status == UNAuthorizationStatus::Provisional;
-        let (lock, cvar) = &*wait_clone;
-        *lock.lock().unwrap() = Some(granted);
-        cvar.notify_one();
-    });
-
-    center.getNotificationSettingsWithCompletionHandler(&block);
-
-    let (lock, cvar) = &*wait;
-    let mut guard = lock.lock().unwrap();
-    while guard.is_none() {
-        guard = cvar.wait(guard).unwrap();
-    }
-    Ok(guard.take().unwrap())
+fn badge_permission_granted(settings: &UNNotificationSettings) -> bool {
+    let status = settings.authorizationStatus();
+    let authorized =
+        status == UNAuthorizationStatus::Authorized || status == UNAuthorizationStatus::Provisional;
+    authorized && settings.badgeSetting() == UNNotificationSetting::Enabled
 }

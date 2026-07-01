@@ -1,19 +1,19 @@
 use std::sync::{Mutex, OnceLock};
 
-use windows::core::{Interface, PCWSTR};
 use windows::Win32::Foundation::{BOOL, COLORREF, HICON, HWND, RECT};
 use windows::Win32::Graphics::Gdi::{
-    CreateBitmap, CreateCompatibleDC, CreateDIBSection, CreateFontW, CreateSolidBrush, DeleteDC,
-    DeleteObject, DrawTextW, Ellipse, GetDC, ReleaseDC, SelectObject, SetBkMode, SetTextColor,
-    BITMAPINFO, BITMAPINFOHEADER, BI_RGB, DIB_RGB_COLORS, DT_CENTER, DT_SINGLELINE, DT_VCENTER,
-    FONT_CHARSET, FONT_CLIP_PRECISION, FONT_QUALITY, FW_BOLD, HBITMAP, HDC, HFONT, HGDIOBJ,
-    ICONINFO, OUT_DEFAULT_PRECIS, TRANSPARENT,
+    BI_RGB, BITMAPINFO, BITMAPINFOHEADER, CreateBitmap, CreateCompatibleDC, CreateDIBSection,
+    CreateFontW, CreateSolidBrush, DIB_RGB_COLORS, DT_CENTER, DT_SINGLELINE, DT_VCENTER, DeleteDC,
+    DeleteObject, DrawTextW, Ellipse, FONT_CHARSET, FONT_CLIP_PRECISION, FONT_QUALITY, FW_BOLD,
+    GetDC, HBITMAP, HDC, HFONT, HGDIOBJ, ICONINFO, OUT_DEFAULT_PRECIS, ReleaseDC, SelectObject,
+    SetBkMode, SetTextColor, TRANSPARENT,
 };
 use windows::Win32::System::Com::{
-    CoCreateInstance, CoInitializeEx, CLSCTX_INPROC_SERVER, COINIT_APARTMENTTHREADED,
+    CLSCTX_INPROC_SERVER, COINIT_APARTMENTTHREADED, CoCreateInstance, CoInitializeEx,
 };
 use windows::Win32::UI::Shell::{ITaskbarList3, TaskbarList};
 use windows::Win32::UI::WindowsAndMessaging::{CreateIconIndirect, DestroyIcon, GetActiveWindow};
+use windows::core::{Interface, PCWSTR};
 
 struct TaskbarState {
     taskbar: ITaskbarList3,

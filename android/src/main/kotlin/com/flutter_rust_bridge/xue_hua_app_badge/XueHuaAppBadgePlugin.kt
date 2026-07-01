@@ -43,7 +43,8 @@ class XueHuaAppBadgePlugin :
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
-        clearActivity()
+        // Keep the Activity global ref during config changes so in-flight permission
+        // dialogs can still complete.
         activityBinding?.removeRequestPermissionsResultListener(this)
         activityBinding = null
     }

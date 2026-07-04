@@ -123,6 +123,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PRIVATE_KEY: ${{ secrets.RELEASE_PRIVATE_KEY }}
+          CFLAGS: -isystem /usr/include
 
   precompile-apple:
     name: Precompile Apple

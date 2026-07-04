@@ -110,13 +110,11 @@ class ArtifactProvider {
     final start = Stopwatch()..start();
     final crateHash = CrateHash.compute(environment.manifestDir,
         tempStorage: environment.targetTempDir);
-    final packageVersion = environment.crateInfo.packageVersion;
     _log.fine(
-        'Computed crate hash $crateHash for package version $packageVersion in '
-        '${start.elapsedMilliseconds}ms');
+        'Computed crate hash $crateHash in ${start.elapsedMilliseconds}ms');
 
     final downloadedArtifactsDir =
-        path.join(environment.targetTempDir, 'precompiled', packageVersion);
+        path.join(environment.targetTempDir, 'precompiled', crateHash);
     Directory(downloadedArtifactsDir).createSync(recursive: true);
 
     final res = <Target, List<Artifact>>{};
@@ -132,15 +130,16 @@ class ArtifactProvider {
       for (final artifact in requiredArtifacts) {
         final fileName = PrecompileBinaries.fileName(target, artifact);
         final downloadedPath = path.join(downloadedArtifactsDir, fileName);
-        final signatureFileName =
-            PrecompileBinaries.signatureFileName(target, artifact);
-        await _tryDownloadArtifacts(
-          crateHash: crateHash,
-          packageVersion: packageVersion,
-          fileName: fileName,
-          signatureFileName: signatureFileName,
-          finalPath: downloadedPath,
-        );
+        if (!File(downloadedPath).existsSync()) {
+          final signatureFileName =
+              PrecompileBinaries.signatureFileName(target, artifact);
+          await _tryDownloadArtifacts(
+            crateHash: crateHash,
+            fileName: fileName,
+            signatureFileName: signatureFileName,
+            finalPath: downloadedPath,
+          );
+        }
         if (File(downloadedPath).existsSync()) {
           artifactsForTarget.add(Artifact(
             path: downloadedPath,
@@ -184,24 +183,19 @@ class ArtifactProvider {
 
   Future<void> _tryDownloadArtifacts({
     required String crateHash,
-    required String packageVersion,
     required String fileName,
     required String signatureFileName,
     required String finalPath,
   }) async {
     final precompiledBinaries = environment.crateOptions.precompiledBinaries!;
     final prefix = precompiledBinaries.uriPrefix;
-    final existingFile = File(finalPath);
-    if (existingFile.existsSync()) {
-      existingFile.deleteSync();
-    }
-    final url = Uri.parse('$prefix$packageVersion/$fileName');
-    final signatureUrl = Uri.parse('$prefix$packageVersion/$signatureFileName');
+    final url = Uri.parse('$prefix$crateHash/$fileName');
+    final signatureUrl = Uri.parse('$prefix$crateHash/$signatureFileName');
     _log.fine('Downloading signature from $signatureUrl');
     final signature = await _get(signatureUrl);
     if (signature.statusCode == 404) {
-      _log.warning('Precompiled binaries not available for package version '
-          '$packageVersion (crate hash $crateHash, $fileName)');
+      _log.warning(
+          'Precompiled binaries not available for crate hash $crateHash ($fileName)');
       return;
     }
     if (signature.statusCode != 200) {

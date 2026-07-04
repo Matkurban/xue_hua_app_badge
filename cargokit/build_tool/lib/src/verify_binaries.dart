@@ -29,8 +29,6 @@ class VerifyBinaries {
       stdout.writeln('Crate does not support precompiled binaries.');
     } else {
       final crateHash = CrateHash.compute(manifestDir);
-      final packageVersion = crateInfo.packageVersion;
-      stdout.writeln('Package version: $packageVersion');
       stdout.writeln('Crate hash: $crateHash');
 
       for (final target in Target.all) {
@@ -53,9 +51,9 @@ class VerifyBinaries {
           final signatureFileName =
               PrecompileBinaries.signatureFileName(target, artifact);
 
-          final url = Uri.parse('$prefix$packageVersion/$fileName');
+          final url = Uri.parse('$prefix$crateHash/$fileName');
           final signatureUrl =
-              Uri.parse('$prefix$packageVersion/$signatureFileName');
+              Uri.parse('$prefix$crateHash/$signatureFileName');
 
           final signature = await get(signatureUrl);
           if (signature.statusCode != 200) {

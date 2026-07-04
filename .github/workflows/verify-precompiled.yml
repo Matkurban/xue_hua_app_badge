@@ -1,0 +1,30 @@
+name: Verify Precompiled Binaries
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify published binaries
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: cargokit/build_tool
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Dart
+        uses: dart-lang/setup-dart@v1.7.2
+
+      - name: Resolve Dart dependencies
+        run: dart pub get
+
+      - name: Verify published binaries
+        run: dart run build_tool verify-binaries --manifest-dir=../../rust

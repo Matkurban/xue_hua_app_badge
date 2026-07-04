@@ -1,0 +1,58 @@
+name: Precompile Android
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  precompile-android:
+    name: Precompile Android
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: cargokit/build_tool
+
+    env:
+      REPOSITORY_SLUG: Matkurban/xue_hua_app_badge
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Dart
+        uses: dart-lang/setup-dart@v1.7.2
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Resolve Dart dependencies
+        run: dart pub get
+
+      - name: Precompile Android artifacts
+        run: >
+          dart run build_tool precompile-binaries
+          --manifest-dir=../../rust
+          --repository=$REPOSITORY_SLUG
+          --android-sdk-location=/usr/local/lib/android/sdk
+          --android-ndk-version=24.0.8215888
+          --android-min-sdk-version=19
+          --target=armv7-linux-androideabi
+          --target=aarch64-linux-android
+          --target=i686-linux-android
+          --target=x86_64-linux-android
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PRIVATE_KEY: ${{ secrets.RELEASE_PRIVATE_KEY }}

@@ -53,6 +53,7 @@ class PrecompileBinaries {
 
   Future<void> run() async {
     final crateInfo = CrateInfo.load(manifestDir);
+    final packageVersion = crateInfo.packageVersion;
 
     final targets = List.of(this.targets);
     if (targets.isEmpty) {
@@ -67,7 +68,7 @@ class PrecompileBinaries {
     final hash = CrateHash.compute(manifestDir);
     _log.info('Computed crate hash: $hash');
 
-    final String tagName = 'precompiled_$hash';
+    final String tagName = 'precompiled_$packageVersion';
 
     final github = GitHub(auth: Authentication.withToken(githubToken));
     final repo = github.repositories;
@@ -75,8 +76,11 @@ class PrecompileBinaries {
       repo: repo,
       tagName: tagName,
       packageName: crateInfo.packageName,
+      packageVersion: packageVersion,
       hash: hash,
     );
+    final releaseAssets =
+        await repo.listReleaseAssets(repositorySlug, release).toList();
 
     final tempDir = this.tempDir != null
         ? Directory(this.tempDir!)
@@ -98,6 +102,7 @@ class PrecompileBinaries {
       androidSdkPath: androidSdkLocation,
       androidNdkVersion: androidNdkVersion,
       androidMinSdkVersion: androidMinSdkVersion,
+      javaHome: Platform.environment['JAVA_HOME'],
       glibcVersion: glibcVersion,
     );
 
@@ -109,14 +114,6 @@ class PrecompileBinaries {
         libraryName: crateInfo.packageName,
         remote: true,
       );
-
-      if (artifactNames.every((name) {
-        final fileName = PrecompileBinaries.fileName(target, name);
-        return (release.assets ?? []).any((e) => e.name == fileName);
-      })) {
-        _log.info("All artifacts for $target already exist - skipping");
-        continue;
-      }
 
       _log.info('Building for $target');
 
@@ -151,13 +148,25 @@ class PrecompileBinaries {
         assets.add(create);
         assets.add(signatureCreate);
       }
+      await _deleteExistingAssets(
+        repo: repo,
+        release: release,
+        releaseAssets: releaseAssets,
+        assetNames: [
+          for (final name in artifactNames)
+            PrecompileBinaries.fileName(target, name),
+          for (final name in artifactNames)
+            PrecompileBinaries.signatureFileName(target, name),
+        ],
+      );
       _log.info('Uploading assets: ${assets.map((e) => e.name)}');
       for (final asset in assets) {
         // This seems to be failing on CI so do it one by one
         int retryCount = 0;
         while (true) {
           try {
-            await repo.uploadReleaseAssets(release, [asset]);
+            final uploaded = await repo.uploadReleaseAssets(release, [asset]);
+            releaseAssets.addAll(uploaded);
             break;
           } on Exception catch (e) {
             if (retryCount == 10) {
@@ -180,8 +189,12 @@ class PrecompileBinaries {
     required RepositoriesService repo,
     required String tagName,
     required String packageName,
+    required String packageVersion,
     required String hash,
   }) async {
+    final releaseName = 'Precompiled binaries $packageVersion';
+    final releaseBody = 'Precompiled binaries for crate $packageName, '
+        'package version $packageVersion. Latest uploaded crate hash: $hash.';
     Release release;
     try {
       _log.info('Fetching release $tagName');
@@ -192,14 +205,36 @@ class PrecompileBinaries {
           repositorySlug,
           CreateRelease.from(
             tagName: tagName,
-            name: 'Precompiled binaries ${hash.substring(0, 8)}',
+            name: releaseName,
             targetCommitish: null,
             isDraft: false,
             isPrerelease: false,
-            body: 'Precompiled binaries for crate $packageName, '
-                'crate hash $hash.',
+            body: releaseBody,
           ));
     }
-    return release;
+    return repo.editRelease(
+      repositorySlug,
+      release,
+      name: releaseName,
+      body: releaseBody,
+      draft: false,
+      preRelease: false,
+    );
+  }
+
+  Future<void> _deleteExistingAssets({
+    required RepositoriesService repo,
+    required Release release,
+    required List<ReleaseAsset> releaseAssets,
+    required List<String> assetNames,
+  }) async {
+    final existingAssets = releaseAssets
+        .where((asset) => asset.name != null && assetNames.contains(asset.name))
+        .toList(growable: false);
+    for (final asset in existingAssets) {
+      _log.info('Deleting existing asset ${asset.name}');
+      await repo.deleteReleaseAsset(repositorySlug, asset);
+      releaseAssets.removeWhere((candidate) => candidate.id == asset.id);
+    }
   }
 }

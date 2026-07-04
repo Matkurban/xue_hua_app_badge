@@ -76,16 +76,10 @@ jobs:
 
   precompile-linux:
     name: Precompile Linux
-    needs: precompile-android
     if: |
-      always() && (
-        github.event_name == 'push' ||
-        github.event.inputs.target_group == 'all' ||
-        github.event.inputs.target_group == 'linux'
-      ) && (
-        needs.precompile-android.result == 'success' ||
-        needs.precompile-android.result == 'skipped'
-      )
+      github.event_name == 'push' ||
+      github.event.inputs.target_group == 'all' ||
+      github.event.inputs.target_group == 'linux'
     runs-on: ubuntu-latest
 
     defaults:
@@ -132,16 +126,10 @@ jobs:
 
   precompile-apple:
     name: Precompile Apple
-    needs: precompile-linux
     if: |
-      always() && (
-        github.event_name == 'push' ||
-        github.event.inputs.target_group == 'all' ||
-        github.event.inputs.target_group == 'apple'
-      ) && (
-        needs.precompile-linux.result == 'success' ||
-        needs.precompile-linux.result == 'skipped'
-      )
+      github.event_name == 'push' ||
+      github.event.inputs.target_group == 'all' ||
+      github.event.inputs.target_group == 'apple'
     runs-on: macos-latest
 
     defaults:
@@ -181,16 +169,10 @@ jobs:
 
   precompile-windows:
     name: Precompile Windows
-    needs: precompile-apple
     if: |
-      always() && (
-        github.event_name == 'push' ||
-        github.event.inputs.target_group == 'all' ||
-        github.event.inputs.target_group == 'windows'
-      ) && (
-        needs.precompile-apple.result == 'success' ||
-        needs.precompile-apple.result == 'skipped'
-      )
+      github.event_name == 'push' ||
+      github.event.inputs.target_group == 'all' ||
+      github.event.inputs.target_group == 'windows'
     runs-on: windows-latest
 
     defaults:

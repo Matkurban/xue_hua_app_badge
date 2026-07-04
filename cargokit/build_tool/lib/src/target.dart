@@ -109,6 +109,18 @@ class Target {
         .toList(growable: false);
   }
 
+  /// Targets we publish and verify in the shared precompiled release.
+  ///
+  /// `linux-riscv64` remains experimental in Flutter and does not have
+  /// consistently available official engine artifacts, so we keep the target in
+  /// the registry for potential custom/local use but exclude it from the
+  /// default precompiled release set.
+  static List<Target> precompiledReleaseTargets() {
+    return all
+        .where((element) => element.rust != 'riscv64gc-unknown-linux-gnu')
+        .toList(growable: false);
+  }
+
   /// Returns buildable targets on current host platform ignoring Android targets.
   static List<Target> buildableTargets() {
     if (Platform.isLinux) {

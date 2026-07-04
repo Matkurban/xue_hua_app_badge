@@ -1,0 +1,169 @@
+name: Precompile Binaries
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  precompile-linux:
+    name: Precompile Linux and Android
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: cargokit/build_tool
+
+    env:
+      REPOSITORY_SLUG: Matkurban/xue_hua_app_badge
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Dart
+        uses: dart-lang/setup-dart@v1.7.2
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Set up Zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: 0.13.0
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install GTK
+        run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev
+
+      - name: Resolve Dart dependencies
+        run: dart pub get
+
+      - name: Precompile Linux and Android artifacts
+        run: >
+          dart run build_tool precompile-binaries
+          --manifest-dir=../../rust
+          --repository=$REPOSITORY_SLUG
+          --glibc-version=2.17
+          --android-sdk-location=/usr/local/lib/android/sdk
+          --android-ndk-version=24.0.8215888
+          --android-min-sdk-version=19
+          --target=x86_64-unknown-linux-gnu
+          --target=aarch64-unknown-linux-gnu
+          --target=riscv64gc-unknown-linux-gnu
+          --target=armv7-linux-androideabi
+          --target=aarch64-linux-android
+          --target=i686-linux-android
+          --target=x86_64-linux-android
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PRIVATE_KEY: ${{ secrets.RELEASE_PRIVATE_KEY }}
+
+  precompile-macos:
+    name: Precompile macOS and iOS
+    runs-on: macos-latest
+    needs: precompile-linux
+    defaults:
+      run:
+        shell: bash
+        working-directory: cargokit/build_tool
+
+    env:
+      REPOSITORY_SLUG: Matkurban/xue_hua_app_badge
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Dart
+        uses: dart-lang/setup-dart@v1.7.2
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Resolve Dart dependencies
+        run: dart pub get
+
+      - name: Precompile macOS and iOS artifacts
+        run: >
+          dart run build_tool precompile-binaries
+          --manifest-dir=../../rust
+          --repository=$REPOSITORY_SLUG
+          --target=x86_64-apple-darwin
+          --target=aarch64-apple-darwin
+          --target=aarch64-apple-ios
+          --target=aarch64-apple-ios-sim
+          --target=x86_64-apple-ios
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PRIVATE_KEY: ${{ secrets.RELEASE_PRIVATE_KEY }}
+
+  precompile-windows:
+    name: Precompile Windows
+    runs-on: windows-latest
+    needs: precompile-macos
+    defaults:
+      run:
+        shell: bash
+        working-directory: cargokit/build_tool
+
+    env:
+      REPOSITORY_SLUG: Matkurban/xue_hua_app_badge
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Dart
+        uses: dart-lang/setup-dart@v1.7.2
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Resolve Dart dependencies
+        run: dart pub get
+
+      - name: Precompile Windows artifacts
+        run: >
+          dart run build_tool precompile-binaries
+          --manifest-dir=../../rust
+          --repository=$REPOSITORY_SLUG
+          --target=x86_64-pc-windows-msvc
+          --target=aarch64-pc-windows-msvc
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PRIVATE_KEY: ${{ secrets.RELEASE_PRIVATE_KEY }}
+
+  verify:
+    name: Verify published binaries
+    runs-on: ubuntu-latest
+    needs: precompile-windows
+    permissions:
+      contents: read
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: cargokit/build_tool
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Dart
+        uses: dart-lang/setup-dart@v1.7.2
+
+      - name: Resolve Dart dependencies
+        run: dart pub get
+
+      - name: Verify published binaries
+        run: dart run build_tool verify-binaries --manifest-dir=../../rust

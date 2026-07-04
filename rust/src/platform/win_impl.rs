@@ -1,18 +1,26 @@
-use windows::Win32::Foundation::{COLORREF, HWND, RECT};
+use std::sync::{Mutex, OnceLock};
+
+use windows::Win32::Foundation::{BOOL, COLORREF, HICON, HWND, RECT};
 use windows::Win32::Graphics::Gdi::{
     BI_RGB, BITMAPINFO, BITMAPINFOHEADER, CreateBitmap, CreateCompatibleDC, CreateDIBSection,
     CreateFontW, CreateSolidBrush, DIB_RGB_COLORS, DT_CENTER, DT_SINGLELINE, DT_VCENTER, DeleteDC,
     DeleteObject, DrawTextW, Ellipse, FONT_CHARSET, FONT_CLIP_PRECISION, FONT_QUALITY, FW_BOLD,
-    GetDC, HBITMAP, HDC, OUT_DEFAULT_PRECIS, ReleaseDC, SelectObject, SetBkMode, SetTextColor,
-    TRANSPARENT,
+    GetDC, HBITMAP, HDC, HFONT, HGDIOBJ, ICONINFO, OUT_DEFAULT_PRECIS, ReleaseDC, SelectObject,
+    SetBkMode, SetTextColor, TRANSPARENT,
 };
 use windows::Win32::System::Com::{
     CLSCTX_INPROC_SERVER, COINIT_APARTMENTTHREADED, CoCreateInstance, CoInitializeEx,
 };
-use windows::Win32::UI::Input::KeyboardAndMouse::GetActiveWindow;
 use windows::Win32::UI::Shell::{ITaskbarList3, TaskbarList};
-use windows::Win32::UI::WindowsAndMessaging::{CreateIconIndirect, DestroyIcon, HICON, ICONINFO};
-use windows::core::PCWSTR;
+use windows::Win32::UI::WindowsAndMessaging::{CreateIconIndirect, DestroyIcon, GetActiveWindow};
+use windows::core::{Interface, PCWSTR};
+
+struct TaskbarState {
+    taskbar: ITaskbarList3,
+    overlay_icon: Option<HICON>,
+}
+
+static TASKBAR_STATE: OnceLock<Mutex<TaskbarState>> = OnceLock::new();
 
 pub fn set_badge(count: i32, window_handle: Option<i64>) -> Result<(), String> {
     let hwnd = resolve_hwnd(window_handle)?;
@@ -20,14 +28,16 @@ pub fn set_badge(count: i32, window_handle: Option<i64>) -> Result<(), String> {
         return Err("No valid window handle found".into());
     }
 
+    let state = taskbar_state()?;
+
     if count == 0 {
-        clear_overlay(hwnd)?;
+        clear_overlay(state, hwnd)?;
         return Ok(());
     }
 
     let label = super::format_badge_label(count);
     let icon = create_badge_icon(&label)?;
-    apply_overlay(hwnd, icon, &label)
+    apply_overlay(state, hwnd, icon, &label)
 }
 
 fn resolve_hwnd(window_handle: Option<i64>) -> Result<HWND, String> {
@@ -45,28 +55,43 @@ fn resolve_hwnd(window_handle: Option<i64>) -> Result<HWND, String> {
     }
 }
 
-fn create_taskbar() -> Result<ITaskbarList3, String> {
-    unsafe {
-        let _ = CoInitializeEx(None, COINIT_APARTMENTTHREADED);
-    }
+fn taskbar_state() -> Result<&'static Mutex<TaskbarState>, String> {
+    TASKBAR_STATE.get_or_try_init(|| {
+        unsafe {
+            let _ = CoInitializeEx(None, COINIT_APARTMENTTHREADED);
+        }
 
-    let taskbar: ITaskbarList3 =
-        unsafe { CoCreateInstance(&TaskbarList, None, CLSCTX_INPROC_SERVER) }
-            .map_err(|e| format!("CoCreateInstance(TaskbarList) failed: {e}"))?;
+        let taskbar: ITaskbarList3 =
+            unsafe { CoCreateInstance(&TaskbarList, None, CLSCTX_INPROC_SERVER) }
+                .map_err(|e| format!("CoCreateInstance(TaskbarList) failed: {e}"))?;
 
-    unsafe {
-        taskbar
-            .HrInit()
-            .map_err(|e| format!("ITaskbarList3::HrInit failed: {e}"))?;
-    }
+        unsafe {
+            taskbar
+                .HrInit()
+                .map_err(|e| format!("ITaskbarList3::HrInit failed: {e}"))?;
+        }
 
-    Ok(taskbar)
+        Ok(Mutex::new(TaskbarState {
+            taskbar,
+            overlay_icon: None,
+        }))
+    })
 }
 
-fn clear_overlay(hwnd: HWND) -> Result<(), String> {
-    let taskbar = create_taskbar()?;
+fn clear_overlay(state: &Mutex<TaskbarState>, hwnd: HWND) -> Result<(), String> {
+    let mut guard = state
+        .lock()
+        .map_err(|_| "Taskbar state lock poisoned".to_string())?;
+
+    if let Some(icon) = guard.overlay_icon.take() {
+        unsafe {
+            let _ = DestroyIcon(icon);
+        }
+    }
+
     unsafe {
-        taskbar
+        guard
+            .taskbar
             .SetOverlayIcon(hwnd, HICON::default(), PCWSTR::null())
             .map_err(|e| format!("SetOverlayIcon(clear) failed: {e}"))?;
     }
@@ -74,15 +99,28 @@ fn clear_overlay(hwnd: HWND) -> Result<(), String> {
     Ok(())
 }
 
-fn apply_overlay(hwnd: HWND, icon: HICON, description: &str) -> Result<(), String> {
-    let taskbar = create_taskbar()?;
+fn apply_overlay(
+    state: &Mutex<TaskbarState>,
+    hwnd: HWND,
+    icon: HICON,
+    description: &str,
+) -> Result<(), String> {
+    let mut guard = state
+        .lock()
+        .map_err(|_| "Taskbar state lock poisoned".to_string())?;
+
+    if let Some(previous) = guard.overlay_icon.replace(icon) {
+        unsafe {
+            let _ = DestroyIcon(previous);
+        }
+    }
+
     let description = windows_string(description);
     unsafe {
-        let result = taskbar
+        guard
+            .taskbar
             .SetOverlayIcon(hwnd, icon, PCWSTR::from_raw(description.as_ptr()))
-            .map_err(|e| format!("SetOverlayIcon failed: {e}"));
-        let _ = DestroyIcon(icon);
-        result?;
+            .map_err(|e| format!("SetOverlayIcon failed: {e}"))?;
     }
 
     Ok(())
@@ -97,7 +135,7 @@ fn create_badge_icon(label: &str) -> Result<HICON, String> {
             return Err("GetDC failed".into());
         }
 
-        let mem_dc = CreateCompatibleDC(Some(screen_dc));
+        let mem_dc = CreateCompatibleDC(screen_dc);
         if mem_dc.is_invalid() {
             ReleaseDC(None, screen_dc);
             return Err("CreateCompatibleDC failed".into());
@@ -127,13 +165,13 @@ fn create_badge_icon(label: &str) -> Result<HICON, String> {
 
         std::ptr::write_bytes(bits as *mut u8, 0, (SIZE * SIZE * 4) as usize);
 
-        let old_bitmap = SelectObject(mem_dc, color_bitmap.into());
+        let old_bitmap = SelectObject(mem_dc, color_bitmap);
 
         let red_brush = CreateSolidBrush(COLORREF(0x0000_00FF));
-        let old_brush = SelectObject(mem_dc, red_brush.into());
+        let old_brush = SelectObject(mem_dc, red_brush);
         let _ = Ellipse(mem_dc, 0, 0, SIZE, SIZE);
-        let _ = SelectObject(mem_dc, old_brush);
-        let _ = DeleteObject(red_brush.into());
+        SelectObject(mem_dc, old_brush);
+        let _ = DeleteObject(red_brush);
 
         let face_name = windows_string("Segoe UI");
         let font = CreateFontW(
@@ -157,7 +195,7 @@ fn create_badge_icon(label: &str) -> Result<HICON, String> {
             return Err("CreateFontW failed".into());
         }
 
-        let old_font = SelectObject(mem_dc, font.into());
+        let old_font = SelectObject(mem_dc, font);
         SetBkMode(mem_dc, TRANSPARENT);
         SetTextColor(mem_dc, COLORREF(0x00FF_FFFF));
 
@@ -177,35 +215,24 @@ fn create_badge_icon(label: &str) -> Result<HICON, String> {
 
         set_opaque_alpha(bits, SIZE, SIZE);
 
-        let _ = SelectObject(mem_dc, old_font);
-        let _ = DeleteObject(font.into());
-        let _ = SelectObject(mem_dc, old_bitmap);
+        SelectObject(mem_dc, old_font);
+        let _ = DeleteObject(font);
+        SelectObject(mem_dc, old_bitmap);
 
-        let mask_bitmap = match create_mask_from_alpha(bits, SIZE, SIZE) {
-            Ok(mask_bitmap) => mask_bitmap,
-            Err(err) => {
-                cleanup_dc(mem_dc, screen_dc, color_bitmap, HBITMAP::default());
-                return Err(err);
-            }
-        };
+        let mask_bitmap = create_mask_from_alpha(bits, SIZE, SIZE)?;
         let icon_info = ICONINFO {
-            fIcon: true.into(),
+            fIcon: BOOL(1),
             xHotspot: 0,
             yHotspot: 0,
             hbmMask: mask_bitmap,
             hbmColor: color_bitmap,
         };
 
-        let icon = match CreateIconIndirect(&icon_info) {
-            Ok(icon) => icon,
-            Err(e) => {
-                cleanup_dc(mem_dc, screen_dc, color_bitmap, mask_bitmap);
-                return Err(format!("CreateIconIndirect failed: {e}"));
-            }
-        };
+        let icon = CreateIconIndirect(&icon_info)
+            .map_err(|e| format!("CreateIconIndirect failed: {e}"))?;
 
-        let _ = DeleteObject(mask_bitmap.into());
-        let _ = DeleteObject(color_bitmap.into());
+        let _ = DeleteObject(mask_bitmap);
+        let _ = DeleteObject(color_bitmap);
         let _ = DeleteDC(mem_dc);
         ReleaseDC(None, screen_dc);
 
@@ -214,8 +241,7 @@ fn create_badge_icon(label: &str) -> Result<HICON, String> {
 }
 
 unsafe fn set_opaque_alpha(bits: *mut core::ffi::c_void, width: i32, height: i32) {
-    let pixels =
-        unsafe { std::slice::from_raw_parts_mut(bits as *mut u8, (width * height * 4) as usize) };
+    let pixels = std::slice::from_raw_parts_mut(bits as *mut u8, (width * height * 4) as usize);
     for chunk in pixels.chunks_exact_mut(4) {
         if chunk[0] != 0 || chunk[1] != 0 || chunk[2] != 0 {
             chunk[3] = 255;
@@ -228,8 +254,7 @@ unsafe fn create_mask_from_alpha(
     width: i32,
     height: i32,
 ) -> Result<HBITMAP, String> {
-    let pixels =
-        unsafe { std::slice::from_raw_parts(bits as *const u8, (width * height * 4) as usize) };
+    let pixels = std::slice::from_raw_parts(bits as *const u8, (width * height * 4) as usize);
     let row_stride = ((width + 15) / 16) * 2;
     let mut mask = vec![0u8; (row_stride * height) as usize];
 
@@ -243,7 +268,7 @@ unsafe fn create_mask_from_alpha(
         }
     }
 
-    let mask_bitmap = unsafe { CreateBitmap(width, height, 1, 1, Some(mask.as_ptr() as *const _)) };
+    let mask_bitmap = CreateBitmap(width, height, 1, 1, Some(mask.as_ptr() as *const _));
     if mask_bitmap.is_invalid() {
         return Err("CreateBitmap(mask) failed".into());
     }
@@ -253,18 +278,16 @@ unsafe fn create_mask_from_alpha(
 
 unsafe fn cleanup_dc(mem_dc: HDC, screen_dc: HDC, color_bitmap: HBITMAP, mask_bitmap: HBITMAP) {
     if !color_bitmap.is_invalid() {
-        let _ = unsafe { DeleteObject(color_bitmap.into()) };
+        let _ = DeleteObject(color_bitmap);
     }
     if !mask_bitmap.is_invalid() {
-        let _ = unsafe { DeleteObject(mask_bitmap.into()) };
+        let _ = DeleteObject(mask_bitmap);
     }
     if !mem_dc.is_invalid() {
-        let _ = unsafe { DeleteDC(mem_dc) };
+        let _ = DeleteDC(mem_dc);
     }
     if !screen_dc.is_invalid() {
-        unsafe {
-            ReleaseDC(None, screen_dc);
-        }
+        ReleaseDC(None, screen_dc);
     }
 }
 

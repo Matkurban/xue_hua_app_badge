@@ -123,9 +123,11 @@ jobs:
           --glibc-version=2.17
           --target=x86_64-unknown-linux-gnu
           --target=aarch64-unknown-linux-gnu
+          --target=riscv64gc-unknown-linux-gnu
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PRIVATE_KEY: ${{ secrets.RELEASE_PRIVATE_KEY }}
+          CFLAGS: -isystem /usr/include
 
   precompile-apple:
     name: Precompile Apple

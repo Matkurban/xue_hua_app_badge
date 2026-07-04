@@ -33,7 +33,7 @@ class VerifyBinaries {
       stdout.writeln('Package version: $packageVersion');
       stdout.writeln('Crate hash: $crateHash');
 
-      for (final target in Target.precompiledReleaseTargets()) {
+      for (final target in Target.all) {
         final message = 'Checking ${target.rust}...';
         stdout.write(message.padRight(40));
         stdout.flush();

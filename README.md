@@ -25,16 +25,14 @@ Cross-platform Flutter app badge plugin. Core logic is implemented in **Rust** a
 
 ```yaml
 dependencies:
-  xue_hua_app_badge: ^1.0.5
+  xue_hua_app_badge: ^1.0.2
 ```
 
 ### Requirements
 
 - Flutter >= 3.3.0, Dart SDK ^3.12.2
+- [rustup](https://rustup.rs/) with the `stable` toolchain (see [Rust Build Requirements](#rust-build-requirements))
 - Standard Flutter tooling for each target platform
-- Most plugin consumers do **not** need Rust installed when matching precompiled binaries have already been published for this crate hash
-- Maintainers and contributors should still install [rustup](https://rustup.rs/) with the `stable` toolchain (see [Rust Build Requirements](#rust-build-requirements))
-- If you are developing unpublished Rust changes locally, Cargokit will build from source for the new crate hash until precompiled artifacts are published
 - After changing the Rust public API: `cargo install flutter_rust_bridge_codegen`
 
 ## Quick Start
@@ -125,32 +123,13 @@ AppKit / UIKit calls are dispatched to the main thread via `dispatch2`. On Andro
 
 ## Rust Build Requirements
 
-This plugin uses [Cargokit](https://github.com/irondash/cargokit) to provide signed precompiled binaries during `flutter run` / `flutter build`, with local Rust compilation as a fallback. **You do not need to run `cargo ndk` manually.**
+This plugin uses [Cargokit](https://github.com/irondash/cargokit) to compile Rust automatically during `flutter run` / `flutter build`. **You do not need to run `cargo ndk` manually.**
 
-### Plugin Consumers
-
-- Flutter >= 3.3.0, Dart ^3.12.2
-- Standard Flutter tooling for the target platform
-- If your machine does **not** have `rustup`, Cargokit will try to download signed precompiled binaries for the current crate hash
-- If your machine **does** have `rustup`, Cargokit follows its default behavior and prefers a local Rust build unless you opt into precompiled downloads
-
-### Force Precompiled Binaries Even When Rust Is Installed
-
-Create `cargokit_options.yaml` in the root of your Flutter app:
-
-```yaml
-use_precompiled_binaries: true
-```
-
-This is useful when:
-- you already have Rust installed for unrelated work
-- you want to validate the published artifacts instead of rebuilding locally
-
-### Maintainers / Contributors
+### All Platforms
 
 - Install [rustup](https://rustup.rs/) and ensure the `stable` toolchain is on your PATH
-- On first source build, Cargokit installs required cross-compilation targets via `rustup target add`
-- If you change Rust sources, `Cargo.toml`, `Cargo.lock`, `build.rs`, or `rust/cargokit.yaml`, the crate hash changes and local source builds are still required until fresh precompiled artifacts are published
+- Flutter >= 3.3.0, Dart ^3.12.2
+- On first build, Cargokit installs required cross-compilation targets via `rustup target add`
 - After changing the Rust public API:
 
 ```bash
@@ -171,7 +150,7 @@ cd rust && cargo check   # validates the host platform only
 
 | Error | Fix |
 |-------|-----|
-| `rustup not found` | Plugin consumers can usually rely on published precompiled binaries; plugin maintainers should install rustup and restart the terminal |
+| `rustup not found` | Install rustup and restart your terminal |
 | `Please set 'android.ndkVersion'` | Set NDK version in the app-level `android/app/build.gradle` |
 | `android context was not initialized` | Add the plugin via `pubspec.yaml` (no manual MethodChannel needed) |
 | Dart errors after Rust API changes | Re-run `flutter_rust_bridge_codegen generate` |

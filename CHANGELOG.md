@@ -1,9 +1,3 @@
-## 1.0.5
-
-* Distribution: Add Cargokit precompiled binaries configuration and GitHub Actions publishing workflow
-* Docs: Explain consumer vs maintainer Rust requirements and `cargokit_options.yaml` opt-in behavior
-* Consumers without Rust can use published precompiled binaries; users with `rustup` keep Cargokit's default local-build preference unless they opt in
-
 ## 1.0.4
 
 * Optimized initialization logic

@@ -19,10 +19,6 @@ on:
           - windows
           - verify
 
-concurrency:
-  group: precompile-binaries-${{ github.ref }}
-  cancel-in-progress: false
-
 permissions:
   contents: write
 

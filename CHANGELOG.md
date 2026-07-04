@@ -1,3 +1,7 @@
+## 1.0.4
+
+* Optimized initialization logic
+
 ## 1.0.3
 
 * iOS: Fix main-thread Condvar deadlock on iOS 16+; add `ios_async` RunLoop bridge module

@@ -4,14 +4,14 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'xue_hua_app_badge'
-  s.version          = '0.0.1'
-  s.summary          = 'A new Flutter FFI plugin project.'
+  s.version          = '1.0.0'
+  s.summary          = 'Cross-platform Flutter app badge plugin with a Rust core. Supports Android, iOS, macOS, Windows, and Linux via a unified set/remove/permission API.'
   s.description      = <<-DESC
-A new Flutter FFI plugin project.
+Cross-platform Flutter app badge plugin with a Rust core. Supports Android, iOS, macOS, Windows, and Linux via a unified set/remove/permission API.
                        DESC
-  s.homepage         = 'http://example.com'
+  s.homepage         = 'https://github.com/Matkurban/xue_hua_app_badge'
   s.license          = { :file => '../LICENSE' }
-  s.author           = { 'Your Company' => 'email@example.com' }
+  s.author           = { 'Matkurban' => '3496354336@qq.com' }
   s.module_name      = 'xue_hua_app_badge'
 
   # This will ensure the source files in Classes/ are included in the native

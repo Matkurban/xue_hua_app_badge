@@ -87,6 +87,47 @@ Linux 通过 Unity LauncherEntry 协议更新任务栏角标，需要能解析 `
 g_setenv("GAPPLICATION_ID", APPLICATION_ID, TRUE);
 ```
 
+### Linux：deb 打包与角标测试
+
+example 应用提供基于 nfpm 的 `.deb` 打包，便于在 Ubuntu/GNOME 上安装后手测角标。
+
+**环境准备**
+
+```bash
+sudo apt install clang cmake ninja-build pkg-config libgtk-3-dev
+go install github.com/goreleaser/nfpm/v2/cmd/nfpm@v2.41.3
+export PATH="$HOME/go/bin:$PATH"
+```
+
+**构建与安装**
+
+```bash
+cd example/linux/packaging
+./build-deb.sh
+sudo dpkg -i ../../dist/xue-hua-app-badge-example_1.0.0_amd64.deb
+sudo apt-get install -f
+```
+
+**自动化安装检查**
+
+```bash
+./verify-install.sh
+```
+
+**手测角标（Ubuntu / GNOME）**
+
+1. 从应用菜单启动 **xue_hua_app_badge Example**（不要从终端直接运行）
+2. 将应用固定到 Dock
+3. 点击 **+1**、**-1**、**Clear**，观察 Dock 角标是否同步变化
+
+**排查命令**
+
+```bash
+ls -l /usr/share/applications/com.example.xue_hua_app_badge.desktop
+tr '\0' '\n' < /proc/$(pgrep -n xue_hua_app_badge_example)/environ | grep -E 'GAPPLICATION|GIO_LAUNCHED'
+dbus-monitor "interface='com.canonical.Unity.LauncherEntry'"
+```
+
 ### Windows：窗口句柄（可选）
 
 ```dart

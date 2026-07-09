@@ -1,3 +1,7 @@
+## 1.0.5
+
+* Android 使用 current_thread FRB handler，避免多插件并存时 pthread_key 耗尽。
+
 ## 1.0.4
 
 * Optimized initialization logic

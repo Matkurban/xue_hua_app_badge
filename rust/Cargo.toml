@@ -8,6 +8,8 @@ crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
 flutter_rust_bridge = "=2.12.0"
+tokio = { version = "1.52.3", features = ["rt", "macros"] }
+threadpool = "1.8.1"
 
 [target.'cfg(target_os = "windows")'.dependencies]
 windows = { version = "0.62.2", features = [

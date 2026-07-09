@@ -87,6 +87,47 @@ Linux uses the Unity LauncherEntry protocol and needs a resolvable `.desktop` fi
 g_setenv("GAPPLICATION_ID", APPLICATION_ID, TRUE);
 ```
 
+### Linux: deb Packaging and Badge Testing
+
+The example app includes nfpm-based `.deb` packaging for Ubuntu/GNOME manual testing.
+
+**Prerequisites**
+
+```bash
+sudo apt install clang cmake ninja-build pkg-config libgtk-3-dev
+go install github.com/goreleaser/nfpm/v2/cmd/nfpm@v2.41.3
+export PATH="$HOME/go/bin:$PATH"
+```
+
+**Build and install**
+
+```bash
+cd example/linux/packaging
+./build-deb.sh
+sudo dpkg -i ../../dist/xue-hua-app-badge-example_1.0.0_amd64.deb
+sudo apt-get install -f
+```
+
+**Automated install checks**
+
+```bash
+./verify-install.sh
+```
+
+**Manual badge test (Ubuntu / GNOME)**
+
+1. Launch **xue_hua_app_badge Example** from the application menu (not from terminal)
+2. Pin the app to the dock
+3. Click **+1**, **-1**, and **Clear** and confirm the dock badge updates
+
+**Troubleshooting**
+
+```bash
+ls -l /usr/share/applications/com.example.xue_hua_app_badge.desktop
+tr '\0' '\n' < /proc/$(pgrep -n xue_hua_app_badge_example)/environ | grep -E 'GAPPLICATION|GIO_LAUNCHED'
+dbus-monitor "interface='com.canonical.Unity.LauncherEntry'"
+```
+
 ### Windows: Window Handle (Optional)
 
 ```dart

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=xue_hua_app_badge Example
+Comment=Test Linux app badge via Unity LauncherEntry
+Exec=/usr/lib/xue_hua_app_badge_example/xue_hua_app_badge_example
+Icon=com.example.xue_hua_app_badge
+StartupWMClass=xue_hua_app_badge_example
+Categories=Utility;
+Terminal=false

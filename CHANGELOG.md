@@ -1,3 +1,8 @@
+## 1.0.7
+
+* macOS/iOS: Fix Cargokit `build_pod.sh` failure caused by CRLF line endings in the 1.0.6 pub.dev package (`set: -: invalid option`)
+* Add `.gitattributes` so shell scripts stay LF on publish
+
 ## 1.0.6
 
 * Windows: Fix Rust build against `windows` crate 0.62 (import relocation, GDI signatures, `AgileReference` for COM, stable `Once` init)

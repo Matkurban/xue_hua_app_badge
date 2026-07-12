@@ -1,3 +1,9 @@
+## 1.0.6
+
+* Windows: Fix Rust build against `windows` crate 0.62 (import relocation, GDI signatures, `AgileReference` for COM, stable `Once` init)
+* Windows: Render DPI-aware overlay badges with 2x supersampling and soft-edge alpha
+* Windows: Center badge digits by ink bounding box (fix top-left offset / blurry glyphs)
+
 ## 1.0.5
 
 * Android 使用 current_thread FRB handler，避免多插件并存时 pthread_key 耗尽。

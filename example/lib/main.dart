@@ -32,7 +32,7 @@ class _MyAppState extends State<MyApp> {
       if (XueHuaAppBadge.isPermissionGranted()) {
         return;
       }
-      final granted = XueHuaAppBadge.requestPermission();
+      final granted = await XueHuaAppBadge.requestPermission();
       if (!granted && mounted) {
         setState(() {
           _permissionHint = 'Badge permission was denied. Enable notifications in system settings.';

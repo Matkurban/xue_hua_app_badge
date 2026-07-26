@@ -49,7 +49,7 @@ Future<void> main() async {
 
 // Recommended on iOS 16+ / Android 13+
 if (!XueHuaAppBadge.isPermissionGranted()) {
-  XueHuaAppBadge.requestPermission();
+  await XueHuaAppBadge.requestPermission();
 }
 
 XueHuaAppBadge.set(5);
@@ -68,7 +68,7 @@ The plugin exposes explicit permission APIs (**no automatic prompt on `set()`**)
 
 ```dart
 if (!XueHuaAppBadge.isPermissionGranted()) {
-  final granted = XueHuaAppBadge.requestPermission();
+  final granted = await XueHuaAppBadge.requestPermission();
   if (!granted) {
     // User denied — guide them to system settings
   }

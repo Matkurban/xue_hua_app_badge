@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
+import android.os.Looper
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import java.util.concurrent.CountDownLatch
@@ -39,6 +40,14 @@ object PermissionHelper {
         ) == PackageManager.PERMISSION_GRANTED
     }
 
+    /**
+     * Waits for the user to answer the permission dialog, so it must not run on the main
+     * thread: [onRequestPermissionsResult] is dispatched there as well, and waiting for it
+     * from the main thread deadlocks the process until Android raises an ANR.
+     *
+     * When called from the main thread anyway, the dialog is still shown but the current
+     * permission state is returned right away instead of waiting for the answer.
+     */
     @JvmStatic
     fun requestBadgePermission(activity: Activity): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
@@ -62,26 +71,33 @@ object PermissionHelper {
             }
         }
 
-        if (!isOwner) {
-            request.latch.await(TIMEOUT_SECONDS, TimeUnit.SECONDS)
-            return isBadgePermissionGranted(activity)
-        }
-
-        ActivityCompat.requestPermissions(
-            activity,
-            arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-            REQUEST_CODE,
-        )
-
-        request.latch.await(TIMEOUT_SECONDS, TimeUnit.SECONDS)
-
-        synchronized(lock) {
-            if (inFlight?.id == request.id) {
-                inFlight = null
+        if (isOwner) {
+            activity.runOnUiThread {
+                ActivityCompat.requestPermissions(
+                    activity,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    REQUEST_CODE,
+                )
             }
         }
 
-        return request.result
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            return false
+        }
+
+        val answered = request.latch.await(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+
+        // Also drop the shared request after a timeout: the main-thread path above returns
+        // before clearing it, so a lost callback would otherwise stall every later caller.
+        if (isOwner || !answered) {
+            synchronized(lock) {
+                if (inFlight?.id == request.id) {
+                    inFlight = null
+                }
+            }
+        }
+
+        return if (isOwner && answered) request.result else isBadgePermissionGranted(activity)
     }
 
     fun onRequestPermissionsResult(

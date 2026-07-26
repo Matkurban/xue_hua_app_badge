@@ -14,7 +14,9 @@ void setBadge({required int count, PlatformInt64? windowHandle}) => RustLib
 void removeBadge({PlatformInt64? windowHandle}) =>
     RustLib.instance.api.crateApiBadgeRemoveBadge(windowHandle: windowHandle);
 
-bool requestBadgePermission() =>
+/// Deliberately not `frb(sync)`: the platform permission result is delivered on the
+/// main thread, so waiting for it from the main thread deadlocks until the ANR timeout.
+Future<bool> requestBadgePermission() =>
     RustLib.instance.api.crateApiBadgeRequestBadgePermission();
 
 bool isBadgePermissionGranted() =>

@@ -87,7 +87,7 @@ abstract class RustLibApi extends BaseApi {
 
   void crateApiBadgeRemoveBadge({PlatformInt64? windowHandle});
 
-  bool crateApiBadgeRequestBadgePermission();
+  Future<bool> crateApiBadgeRequestBadgePermission();
 
   void crateApiBadgeSetBadge({required int count, PlatformInt64? windowHandle});
 }
@@ -201,12 +201,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   );
 
   @override
-  bool crateApiBadgeRequestBadgePermission() {
-    return handler.executeSync(
-      SyncTask(
-        callFfi: () {
+  Future<bool> crateApiBadgeRequestBadgePermission() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 5)!;
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 5,
+            port: port_,
+          );
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_bool,

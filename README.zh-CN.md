@@ -49,7 +49,7 @@ Future<void> main() async {
 
 // iOS 16+ / Android 13+ 建议先请求权限
 if (!XueHuaAppBadge.isPermissionGranted()) {
-  XueHuaAppBadge.requestPermission();
+  await XueHuaAppBadge.requestPermission();
 }
 
 XueHuaAppBadge.set(5);
@@ -68,7 +68,7 @@ XueHuaAppBadge.remove();
 
 ```dart
 if (!XueHuaAppBadge.isPermissionGranted()) {
-  final granted = XueHuaAppBadge.requestPermission();
+  final granted = await XueHuaAppBadge.requestPermission();
   if (!granted) {
     // 用户拒绝，可提示前往系统设置
   }

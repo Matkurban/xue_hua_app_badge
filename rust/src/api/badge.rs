@@ -45,7 +45,8 @@ pub fn remove_badge(window_handle: Option<i64>) -> Result<(), String> {
     set_badge(0, window_handle)
 }
 
-#[flutter_rust_bridge::frb(sync)]
+/// Deliberately not `frb(sync)`: the platform permission result is delivered on the
+/// main thread, so waiting for it from the main thread deadlocks until the ANR timeout.
 pub fn request_badge_permission() -> Result<bool, String> {
     crate::runtime::ensure_initialized()?;
     #[cfg(target_os = "windows")]

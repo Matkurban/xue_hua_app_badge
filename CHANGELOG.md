@@ -1,3 +1,9 @@
+## 1.0.8
+
+* Android: Fix main-thread deadlock that froze the app for 30s and triggered an ANR when `requestPermission()` was called on Android 13+ without `POST_NOTIFICATIONS` granted. The permission result is dispatched on the main thread, so waiting for it there could never complete.
+* **API change**: `XueHuaAppBadge.requestPermission()` now returns `Future<bool>` instead of `bool`, so the wait happens off the main thread. Add `await` at call sites. `set()` / `remove()` / `isPermissionGranted()` are unchanged.
+* Android: `PermissionHelper.requestBadgePermission` now refuses to block when called on the main looper, and always raises the dialog via `runOnUiThread`.
+
 ## 1.0.7
 
 * macOS/iOS: Fix Cargokit `build_pod.sh` failure caused by CRLF line endings in the 1.0.6 pub.dev package (`set: -: invalid option`)

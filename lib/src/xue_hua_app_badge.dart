@@ -27,7 +27,11 @@ class XueHuaAppBadge {
     removeBadge(windowHandle: windowHandle);
   }
 
-  static bool requestPermission() => requestBadgePermission();
+  /// Shows the platform permission prompt and resolves with the user's answer.
+  ///
+  /// Runs off the main thread: waiting for the permission result on the main thread
+  /// deadlocks Android until the ANR timeout.
+  static Future<bool> requestPermission() => requestBadgePermission();
 
   static bool isPermissionGranted() => isBadgePermissionGranted();
 }

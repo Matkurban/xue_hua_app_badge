@@ -6,6 +6,7 @@ import android.content.Context
 import android.os.Build
 import androidx.annotation.Keep
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import me.leolin.shortcutbadger.ShortcutBadger
 
 @Keep
@@ -16,12 +17,12 @@ object BadgeHelper {
     @JvmStatic
     fun applyBadge(context: Context, count: Int): Boolean {
         val safeCount = count.coerceAtLeast(0)
-        var applied = false
+        var applied: Boolean
 
-        try {
-            applied = ShortcutBadger.applyCount(context, safeCount)
+        applied = try {
+            ShortcutBadger.applyCount(context, safeCount)
         } catch (_: Exception) {
-            applied = false
+            false
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -33,43 +34,52 @@ object BadgeHelper {
     }
 
     private fun applyNotificationFallback(context: Context, count: Int): Boolean {
-        val manager =
-            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        return try {
+            val manager =
+                context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+                    ?: return false
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel =
-                NotificationChannel(
-                    CHANNEL_ID,
-                    "App Badge",
-                    NotificationManager.IMPORTANCE_MIN,
-                ).apply {
-                    setShowBadge(true)
-                    enableLights(false)
-                    enableVibration(false)
-                    setSound(null, null)
-                }
-            manager.createNotificationChannel(channel)
+            if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) {
+                return false
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val channel =
+                    NotificationChannel(
+                        CHANNEL_ID,
+                        "App Badge",
+                        NotificationManager.IMPORTANCE_MIN,
+                    ).apply {
+                        setShowBadge(true)
+                        enableLights(false)
+                        enableVibration(false)
+                        setSound(null, null)
+                    }
+                manager.createNotificationChannel(channel)
+            }
+
+            if (count <= 0) {
+                manager.cancel(NOTIFICATION_ID)
+                return true
+            }
+
+            val notification =
+                NotificationCompat.Builder(context, CHANNEL_ID)
+                    .setSmallIcon(resolveSmallIcon(context))
+                    .setContentTitle("")
+                    .setContentText("")
+                    .setNumber(count)
+                    .setShowWhen(false)
+                    .setOnlyAlertOnce(true)
+                    .setSilent(true)
+                    .setPriority(NotificationCompat.PRIORITY_MIN)
+                    .build()
+
+            manager.notify(NOTIFICATION_ID, notification)
+            true
+        } catch (_: Exception) {
+            false
         }
-
-        if (count <= 0) {
-            manager.cancel(NOTIFICATION_ID)
-            return true
-        }
-
-        val notification =
-            NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(resolveSmallIcon(context))
-                .setContentTitle("")
-                .setContentText("")
-                .setNumber(count)
-                .setShowWhen(false)
-                .setOnlyAlertOnce(true)
-                .setSilent(true)
-                .setPriority(NotificationCompat.PRIORITY_MIN)
-                .build()
-
-        manager.notify(NOTIFICATION_ID, notification)
-        return true
     }
 
     private fun resolveSmallIcon(context: Context): Int {

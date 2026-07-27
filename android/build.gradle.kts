@@ -21,6 +21,9 @@ extensions.configure<LibraryExtension> {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+    }
 }
 
 tasks.withType<KotlinCompile>().configureEach {
@@ -33,4 +36,6 @@ dependencies {
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("me.leolin:ShortcutBadger:1.1.22@aar")
     testImplementation("junit:junit:4.13.2")
+    testImplementation("org.robolectric:robolectric:4.12.2")
+    testImplementation("androidx.test:core:1.5.0")
 }

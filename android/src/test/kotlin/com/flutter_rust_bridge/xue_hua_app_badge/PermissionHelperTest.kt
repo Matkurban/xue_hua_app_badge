@@ -1,28 +1,53 @@
-package com.flutter_rust_bridge.xue_hua_app_badge
+package com.kurban.xue_hua_app_badge
 
 import android.Manifest
 import android.app.Activity
 import android.content.pm.PackageManager
 import android.os.Build
-import android.os.Looper
+import io.flutter.plugin.common.MethodChannel
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
-import kotlin.system.measureTimeMillis
 
 @RunWith(RobolectricTestRunner::class)
 class PermissionHelperTest {
+    private class TestResult : MethodChannel.Result {
+        var successResult: Any? = null
+        var errorCode: String? = null
+        var errorMessage: String? = null
+        var errorDetails: Any? = null
+        var notImplementedCalled = false
+
+        override fun success(result: Any?) {
+            successResult = result
+        }
+
+        override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
+            this.errorCode = errorCode
+            this.errorMessage = errorMessage
+            this.errorDetails = errorDetails
+        }
+
+        override fun notImplemented() {
+            notImplementedCalled = true
+        }
+    }
+
     @Test
     @Config(sdk = [Build.VERSION_CODES.S_V2])
     fun preApi33AlwaysGranted() {
         val activity = Robolectric.buildActivity(Activity::class.java).setup().get()
         assertTrue(PermissionHelper.isBadgePermissionGranted(activity))
-        assertTrue(PermissionHelper.requestBadgePermission(activity))
+
+        val helper = PermissionHelper()
+        val result = TestResult()
+        helper.requestBadgePermission(activity, result)
+        assertEquals(true, result.successResult)
     }
 
     @Test
@@ -34,27 +59,21 @@ class PermissionHelperTest {
 
     @Test
     @Config(sdk = [Build.VERSION_CODES.TIRAMISU])
-    fun mainThreadRequestReturnsWithoutWaiting() {
+    fun testRequestAndResultCallback() {
         val activity = Robolectric.buildActivity(Activity::class.java).setup().get()
-        assertSame(Looper.getMainLooper(), Looper.myLooper())
+        val helper = PermissionHelper()
+        val result = TestResult()
 
-        // The permission result is delivered on this very thread, so waiting for it here
-        // used to hang for the full 30s timeout and trigger an ANR.
-        val elapsed = measureTimeMillis {
-            assertFalse(PermissionHelper.requestBadgePermission(activity))
-        }
-        assertTrue("blocked the main thread for ${elapsed}ms", elapsed < 1_000)
-
-        // Release the in-flight request so it cannot leak into other tests.
-        PermissionHelper.onRequestPermissionsResult(
+        helper.requestBadgePermission(activity, result)
+        helper.onRequestPermissionsResult(
             REQUEST_CODE,
             arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-            intArrayOf(PackageManager.PERMISSION_DENIED),
+            intArrayOf(PackageManager.PERMISSION_GRANTED),
         )
+        assertEquals(true, result.successResult)
     }
 
     private companion object {
-        /** Mirrors the private request code in [PermissionHelper]. */
         const val REQUEST_CODE = 0x5876
     }
 }

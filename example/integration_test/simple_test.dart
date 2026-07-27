@@ -4,10 +4,9 @@ import 'package:xue_hua_app_badge/xue_hua_app_badge.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
-  setUpAll(() async => await XueHuaAppBadge.initialize());
 
-  test('badge set and remove', () {
-    expect(() => XueHuaAppBadge.set(0), returnsNormally);
-    expect(() => XueHuaAppBadge.remove(), returnsNormally);
+  test('badge set and remove', () async {
+    expect(() async => await XueHuaAppBadge.instance.set(0), returnsNormally);
+    expect(() async => await XueHuaAppBadge.instance.remove(), returnsNormally);
   });
 }

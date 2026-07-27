@@ -1,20 +1,28 @@
-# The Flutter tooling requires that developers have a version of Visual Studio
-# installed that includes CMake 3.14 or later. You should not increase this
-# version, as doing so will cause the plugin to fail to compile for some
-# customers of the plugin.
 cmake_minimum_required(VERSION 3.14)
 
-# Project-level configuration.
 set(PROJECT_NAME "xue_hua_app_badge")
 project(${PROJECT_NAME} LANGUAGES CXX)
 
-include("../cargokit/cmake/cargokit.cmake")
-apply_cargokit(${PROJECT_NAME} ../rust xue_hua_app_badge "")
+set(PLUGIN_NAME "xue_hua_app_badge_plugin")
 
-# List of absolute paths to libraries that should be bundled with the plugin.
-# This list could contain prebuilt libraries, or libraries created by an
-# external build triggered from this build file.
+add_library(${PLUGIN_NAME} SHARED
+  "xue_hua_app_badge_plugin.cpp"
+  "xue_hua_app_badge_plugin.h"
+  "xue_hua_app_badge_plugin_c_api.cpp"
+  "include/xue_hua_app_badge/xue_hua_app_badge_plugin_c_api.h"
+)
+
+apply_standard_plugin_build_settings(${PLUGIN_NAME})
+
+target_compile_definitions(${PLUGIN_NAME} PRIVATE FLUTTER_PLUGIN_IMPL)
+
+target_include_directories(${PLUGIN_NAME} INTERFACE
+  "${CMAKE_CURRENT_SOURCE_DIR}/include"
+)
+
+target_link_libraries(${PLUGIN_NAME} PRIVATE flutter flutter_wrapper_plugin)
+
 set(xue_hua_app_badge_bundled_libraries
-  "${${PROJECT_NAME}_cargokit_lib}"
+  ""
   PARENT_SCOPE
 )

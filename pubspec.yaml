@@ -1,6 +1,6 @@
 name: xue_hua_app_badge
-description: "Cross-platform Flutter app badge plugin with a Rust core. Supports Android, iOS, macOS, Windows, and Linux via a unified set/remove/permission API."
-version: 1.0.9
+description: "Cross-platform Flutter app badge plugin. Supports Android, iOS, macOS, Windows, and Linux via a unified set/remove/permission API."
+version: 2.0.0
 homepage: https://github.com/Matkurban/xue_hua_app_badge
 repository: https://github.com/Matkurban/xue_hua_app_badge
 topics:
@@ -9,17 +9,14 @@ topics:
 
 environment:
   sdk: ^3.12.2
-  flutter: '>=3.3.0'
+  flutter: '>=3.44.0'
 
 dependencies:
   flutter:
     sdk: flutter
-  flutter_rust_bridge: 2.12.0
   plugin_platform_interface: ^2.0.2
 
 dev_dependencies:
-  ffi: ^2.1.3
-  ffigen: ^20.1.1
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
@@ -30,14 +27,13 @@ flutter:
   plugin:
     platforms:
       android:
-        package: com.flutter_rust_bridge.xue_hua_app_badge
+        package: com.kurban.xue_hua_app_badge
         pluginClass: XueHuaAppBadgePlugin
-        ffiPlugin: true
       ios:
-        ffiPlugin: true
+        pluginClass: XueHuaAppBadgePlugin
       linux:
-        ffiPlugin: true
+        pluginClass: XueHuaAppBadgePlugin
       macos:
-        ffiPlugin: true
+        pluginClass: XueHuaAppBadgePlugin
       windows:
-        ffiPlugin: true
+        pluginClass: XueHuaAppBadgePlugin

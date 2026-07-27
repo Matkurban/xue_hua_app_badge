@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:xue_hua_app_badge/xue_hua_app_badge.dart';
 
-Future<void> main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  await XueHuaAppBadge.initialize();
   runApp(const MyApp());
 }
 
@@ -29,10 +28,10 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> _ensureBadgePermission() async {
     try {
-      if (XueHuaAppBadge.isPermissionGranted()) {
+      if (await XueHuaAppBadge.instance.isPermissionGranted()) {
         return;
       }
-      final granted = await XueHuaAppBadge.requestPermission();
+      final granted = await XueHuaAppBadge.instance.requestPermission();
       if (!granted && mounted) {
         setState(() {
           _permissionHint = 'Badge permission was denied. Enable notifications in system settings.';
@@ -45,16 +44,18 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  void _updateBadge(int count) {
+  Future<void> _updateBadge(int count) async {
     setState(() {
       _badgeCount = count;
       _lastError = null;
     });
 
     try {
-      XueHuaAppBadge.set(count);
+      await XueHuaAppBadge.instance.set(count);
     } catch (error) {
-      setState(() => _lastError = error.toString());
+      if (mounted) {
+        setState(() => _lastError = error.toString());
+      }
     }
   }
 

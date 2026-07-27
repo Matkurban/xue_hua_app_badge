@@ -1,3 +1,19 @@
+## 2.0.0
+
+* **Complete Architecture Refactoring**: Removed `flutter_rust_bridge`, `ffi`, `ffigen`, CargoKit, and Rust core dependencies. Replaced with standard platform `MethodChannel` native implementations across Android, iOS, macOS, Windows, and Linux.
+* **Dart API Refactoring**:
+  * Converted `XueHuaAppBadge` into a singleton class accessible via `XueHuaAppBadge.instance` or `XueHuaAppBadge()`.
+  * Removed redundant `XueHuaAppBadge.initialize()` method.
+* **Android**:
+  * Updated package name and namespace to `com.kurban.xue_hua_app_badge`.
+  * Migrated Gradle build configuration scripts to Kotlin DSL (`build.gradle.kts` and `settings.gradle.kts`).
+* **iOS & macOS**:
+  * Added **Swift Package Manager (SPM)** support (`Package.swift`) according to official Flutter SPM plugin guidelines while maintaining CocoaPods podspec compatibility.
+  * Implemented pure Swift plugins handling `UNUserNotificationCenter`, `UIApplication`, and `NSApp.dockTile`.
+* **Windows & Linux**:
+  * Implemented pure C++ Win32 `ITaskbarList3::SetOverlayIcon` for Windows.
+  * Implemented pure C++ GTK / GDBus Unity LauncherEntry DBus signals for Linux.
+
 ## 1.0.9
 
 * Android: Fix JNI `ClassNotFoundException` linkage error when calling `PermissionHelper` or `BadgeHelper` static methods from Rust background threads. Cache global class references (`Global<JClass>`) during `initAndroid` on the Java main thread to bypass system `BootClassLoader` restrictions on attached native threads.

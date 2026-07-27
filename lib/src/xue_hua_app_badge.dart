@@ -1,37 +1,49 @@
-import '../src/rust/api/badge.dart';
-import '../src/rust/frb_generated.dart';
-import 'dart:developer';
+import 'package:flutter/services.dart';
 
-/// Unified Dart wrapper for the Rust badge API.
-///
-/// Call [initialize] once at app startup before using any other methods.
+/// Unified Dart wrapper for the platform badge API via MethodChannel.
 class XueHuaAppBadge {
-  const XueHuaAppBadge._();
+  XueHuaAppBadge._();
 
-  /// Initializes the Rust FFI bridge. Must be called before any badge API.
-  static Future<void> initialize() async {
-    try {
-      if (!RustLib.instance.initialized) {
-        await RustLib.init();
-      }
-    } catch (e, s) {
-      log(e.toString(), error: e, stackTrace: s, name: 'XueHuaAppBadge.initialize');
+  /// Singleton instance of [XueHuaAppBadge].
+  static final XueHuaAppBadge instance = XueHuaAppBadge._();
+
+  /// Factory constructor returning the singleton instance.
+  factory XueHuaAppBadge() => instance;
+
+  final MethodChannel _channel = const MethodChannel('xue_hua_app_badge');
+
+  /// Returns whether badge functionality is supported on the current platform.
+  Future<bool> isSupported() async {
+    final bool? result = await _channel.invokeMethod<bool>('isSupported');
+    return result ?? true;
+  }
+
+  /// Sets the application icon badge count.
+  Future<void> set(int count, {int? windowHandle}) async {
+    if (count < 0) {
+      throw ArgumentError('Badge count must be >= 0');
     }
+    final Map<String, dynamic> arguments = <String, dynamic>{'count': count};
+    if (windowHandle != null) {
+      arguments['windowHandle'] = windowHandle;
+    }
+    await _channel.invokeMethod<void>('setBadge', arguments);
   }
 
-  static void set(int count, {int? windowHandle}) {
-    setBadge(count: count, windowHandle: windowHandle);
-  }
-
-  static void remove({int? windowHandle}) {
-    removeBadge(windowHandle: windowHandle);
+  /// Removes the application icon badge count.
+  Future<void> remove({int? windowHandle}) async {
+    await set(0, windowHandle: windowHandle);
   }
 
   /// Shows the platform permission prompt and resolves with the user's answer.
-  ///
-  /// Runs off the main thread: waiting for the permission result on the main thread
-  /// deadlocks Android until the ANR timeout.
-  static Future<bool> requestPermission() => requestBadgePermission();
+  Future<bool> requestPermission() async {
+    final bool? result = await _channel.invokeMethod<bool>('requestPermission');
+    return result ?? true;
+  }
 
-  static bool isPermissionGranted() => isBadgePermissionGranted();
+  /// Checks if badge permission has been granted.
+  Future<bool> isPermissionGranted() async {
+    final bool? result = await _channel.invokeMethod<bool>('isPermissionGranted');
+    return result ?? true;
+  }
 }

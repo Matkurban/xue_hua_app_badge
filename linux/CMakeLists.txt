@@ -1,19 +1,41 @@
-# The Flutter tooling requires that developers have CMake 3.10 or later
-# installed. You should not increase this version, as doing so will cause
-# the plugin to fail to compile for some customers of the plugin.
 cmake_minimum_required(VERSION 3.10)
 
-# Project-level configuration.
 set(PROJECT_NAME "xue_hua_app_badge")
 project(${PROJECT_NAME} LANGUAGES CXX)
 
-include("../cargokit/cmake/cargokit.cmake")
-apply_cargokit(${PROJECT_NAME} ../rust xue_hua_app_badge "")
+set(PLUGIN_NAME "xue_hua_app_badge_plugin")
 
-# List of absolute paths to libraries that should be bundled with the plugin.
-# This list could contain prebuilt libraries, or libraries created by an
-# external build triggered from this build file.
+add_library(${PLUGIN_NAME} SHARED
+  "xue_hua_app_badge_plugin.cc"
+)
+
+apply_standard_plugin_build_settings(${PLUGIN_NAME})
+
+target_compile_definitions(${PLUGIN_NAME} PRIVATE FLUTTER_PLUGIN_IMPL)
+
+target_include_directories(${PLUGIN_NAME} INTERFACE
+  "${CMAKE_CURRENT_SOURCE_DIR}/include"
+)
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(GLIB REQUIRED glib-2.0)
+pkg_check_modules(GOBJECT REQUIRED gobject-2.0)
+pkg_check_modules(GIO REQUIRED gio-2.0)
+
+target_include_directories(${PLUGIN_NAME} PRIVATE
+  ${GLIB_INCLUDE_DIRS}
+  ${GOBJECT_INCLUDE_DIRS}
+  ${GIO_INCLUDE_DIRS}
+)
+
+target_link_libraries(${PLUGIN_NAME} PRIVATE
+  flutter
+  ${GLIB_LIBRARIES}
+  ${GOBJECT_LIBRARIES}
+  ${GIO_LIBRARIES}
+)
+
 set(xue_hua_app_badge_bundled_libraries
-  "${${PROJECT_NAME}_cargokit_lib}"
+  ""
   PARENT_SCOPE
 )

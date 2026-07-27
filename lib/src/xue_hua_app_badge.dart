@@ -43,7 +43,9 @@ class XueHuaAppBadge {
 
   /// Checks if badge permission has been granted.
   Future<bool> isPermissionGranted() async {
-    final bool? result = await _channel.invokeMethod<bool>('isPermissionGranted');
+    final bool? result = await _channel.invokeMethod<bool>(
+      'isPermissionGranted',
+    );
     return result ?? true;
   }
 }

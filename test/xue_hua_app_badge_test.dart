@@ -11,22 +11,22 @@ void main() {
   setUp(() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-      log.add(methodCall);
-      switch (methodCall.method) {
-        case 'isSupported':
-          return true;
-        case 'setBadge':
-          return null;
-        case 'removeBadge':
-          return null;
-        case 'requestPermission':
-          return true;
-        case 'isPermissionGranted':
-          return true;
-        default:
-          return null;
-      }
-    });
+          log.add(methodCall);
+          switch (methodCall.method) {
+            case 'isSupported':
+              return true;
+            case 'setBadge':
+              return null;
+            case 'removeBadge':
+              return null;
+            case 'requestPermission':
+              return true;
+            case 'isPermissionGranted':
+              return true;
+            default:
+              return null;
+          }
+        });
     log.clear();
   });
 
@@ -42,9 +42,7 @@ void main() {
   test('isSupported', () async {
     final bool supported = await XueHuaAppBadge.instance.isSupported();
     expect(supported, isTrue);
-    expect(log, <Matcher>[
-      isMethodCall('isSupported', arguments: null),
-    ]);
+    expect(log, <Matcher>[isMethodCall('isSupported', arguments: null)]);
   });
 
   test('set badge count', () async {
@@ -64,9 +62,7 @@ void main() {
   test('request permission', () async {
     final bool granted = await XueHuaAppBadge.instance.requestPermission();
     expect(granted, isTrue);
-    expect(log, <Matcher>[
-      isMethodCall('requestPermission', arguments: null),
-    ]);
+    expect(log, <Matcher>[isMethodCall('requestPermission', arguments: null)]);
   });
 
   test('is permission granted', () async {

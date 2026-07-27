@@ -34,7 +34,8 @@ class _MyAppState extends State<MyApp> {
       final granted = await XueHuaAppBadge.instance.requestPermission();
       if (!granted && mounted) {
         setState(() {
-          _permissionHint = 'Badge permission was denied. Enable notifications in system settings.';
+          _permissionHint =
+              'Badge permission was denied. Enable notifications in system settings.';
         });
       }
     } catch (error) {
@@ -68,7 +69,10 @@ class _MyAppState extends State<MyApp> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('Badge count: $_badgeCount', style: Theme.of(context).textTheme.headlineMedium),
+              Text(
+                'Badge count: $_badgeCount',
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
               const SizedBox(height: 24),
               Wrap(
                 spacing: 12,
@@ -80,10 +84,15 @@ class _MyAppState extends State<MyApp> {
                     child: const Text('+1'),
                   ),
                   FilledButton(
-                    onPressed: _badgeCount > 0 ? () => _updateBadge(_badgeCount - 1) : null,
+                    onPressed: _badgeCount > 0
+                        ? () => _updateBadge(_badgeCount - 1)
+                        : null,
                     child: const Text('-1'),
                   ),
-                  OutlinedButton(onPressed: () => _updateBadge(0), child: const Text('Clear')),
+                  OutlinedButton(
+                    onPressed: () => _updateBadge(0),
+                    child: const Text('Clear'),
+                  ),
                 ],
               ),
               const SizedBox(height: 24),
@@ -102,7 +111,9 @@ class _MyAppState extends State<MyApp> {
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Text(
                     _permissionHint!,
-                    style: TextStyle(color: Theme.of(context).colorScheme.tertiary),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.tertiary,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -113,7 +124,9 @@ class _MyAppState extends State<MyApp> {
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: SelectableText(
                     _lastError!,
-                    style: TextStyle(color: Theme.of(context).colorScheme.error),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ),

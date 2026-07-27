@@ -4,6 +4,7 @@
 #include <flutter/method_channel.h>
 #include <flutter/plugin_registrar_windows.h>
 
+#include <windows.h>
 #include <memory>
 
 namespace xue_hua_app_badge {
@@ -25,6 +26,7 @@ class XueHuaAppBadgePlugin : public flutter::Plugin {
       std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result);
 
   flutter::PluginRegistrarWindows *registrar_;
+  ULONG_PTR gdiplus_token_ = 0;
 };
 
 }  // namespace xue_hua_app_badge

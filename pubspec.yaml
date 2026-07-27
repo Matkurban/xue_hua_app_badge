@@ -36,4 +36,4 @@ flutter:
       macos:
         pluginClass: XueHuaAppBadgePlugin
       windows:
-        pluginClass: XueHuaAppBadgePlugin
+        pluginClass: XueHuaAppBadgePluginCApi

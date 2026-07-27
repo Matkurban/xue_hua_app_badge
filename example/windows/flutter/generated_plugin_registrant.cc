@@ -6,9 +6,9 @@
 
 #include "generated_plugin_registrant.h"
 
-#include <xue_hua_app_badge/xue_hua_app_badge_plugin.h>
+#include <xue_hua_app_badge/xue_hua_app_badge_plugin_c_api.h>
 
 void RegisterPlugins(flutter::PluginRegistry* registry) {
-  XueHuaAppBadgePluginRegisterWithRegistrar(
-      registry->GetRegistrarForPlugin("XueHuaAppBadgePlugin"));
+  XueHuaAppBadgePluginCApiRegisterWithRegistrar(
+      registry->GetRegistrarForPlugin("XueHuaAppBadgePluginCApi"));
 }

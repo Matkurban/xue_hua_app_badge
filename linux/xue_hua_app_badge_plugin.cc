@@ -37,7 +37,7 @@ static void emit_unity_badge_signal(int count) {
   g_variant_builder_init(&builder, G_VARIANT_TYPE("a{sv}"));
 
   if (count > 0) {
-    g_variant_builder_add(&builder, "{sv}", "count", g_variant_new_int64(count > 99 ? 99 : count));
+    g_variant_builder_add(&builder, "{sv}", "count", g_variant_new_int64(static_cast<gint64>(count)));
     g_variant_builder_add(&builder, "{sv}", "count-visible", g_variant_new_boolean(TRUE));
   } else {
     g_variant_builder_add(&builder, "{sv}", "count-visible", g_variant_new_boolean(FALSE));

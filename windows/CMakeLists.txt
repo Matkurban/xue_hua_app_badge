@@ -12,7 +12,7 @@ add_library(${PLUGIN_NAME} SHARED
   "include/xue_hua_app_badge/xue_hua_app_badge_plugin_c_api.h"
 )
 
-apply_standard_plugin_build_settings(${PLUGIN_NAME})
+apply_standard_settings(${PLUGIN_NAME})
 
 target_compile_definitions(${PLUGIN_NAME} PRIVATE FLUTTER_PLUGIN_IMPL)
 
@@ -20,7 +20,7 @@ target_include_directories(${PLUGIN_NAME} INTERFACE
   "${CMAKE_CURRENT_SOURCE_DIR}/include"
 )
 
-target_link_libraries(${PLUGIN_NAME} PRIVATE flutter flutter_wrapper_plugin)
+target_link_libraries(${PLUGIN_NAME} PRIVATE flutter flutter_wrapper_plugin gdiplus)
 
 set(xue_hua_app_badge_bundled_libraries
   ""

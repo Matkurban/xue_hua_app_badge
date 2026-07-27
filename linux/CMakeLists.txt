@@ -9,7 +9,7 @@ add_library(${PLUGIN_NAME} SHARED
   "xue_hua_app_badge_plugin.cc"
 )
 
-apply_standard_plugin_build_settings(${PLUGIN_NAME})
+apply_standard_settings(${PLUGIN_NAME})
 
 target_compile_definitions(${PLUGIN_NAME} PRIVATE FLUTTER_PLUGIN_IMPL)
 

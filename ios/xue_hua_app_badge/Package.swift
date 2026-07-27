@@ -4,24 +4,24 @@ import PackageDescription
 let package = Package(
     name: "xue_hua_app_badge",
     platforms: [
-        .iOS(.v12)
+        .iOS(.v12),
     ],
     products: [
         .library(
             name: "xue-hua-app-badge",
             targets: ["xue_hua_app_badge"]
-        )
+        ),
     ],
     dependencies: [
-        .package(name: "FlutterFramework", path: "../FlutterFramework")
+        .package(name: "FlutterFramework", path: "../FlutterFramework"),
     ],
     targets: [
         .target(
             name: "xue_hua_app_badge",
             dependencies: [
-                .product(name: "FlutterFramework", package: "FlutterFramework")
+                .product(name: "FlutterFramework", package: "FlutterFramework"),
             ],
             resources: []
-        )
+        ),
     ]
 )

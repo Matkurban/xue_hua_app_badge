@@ -4,9 +4,11 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
+import androidx.annotation.Keep
 import androidx.core.app.NotificationCompat
 import me.leolin.shortcutbadger.ShortcutBadger
 
+@Keep
 object BadgeHelper {
     private const val CHANNEL_ID = "xue_hua_app_badge_silent"
     private const val NOTIFICATION_ID = 0x5875

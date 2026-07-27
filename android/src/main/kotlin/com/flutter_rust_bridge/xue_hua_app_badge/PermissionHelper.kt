@@ -6,12 +6,14 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Looper
+import androidx.annotation.Keep
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 
+@Keep
 object PermissionHelper {
     private const val REQUEST_CODE = 0x5876
     private const val TIMEOUT_SECONDS = 30L

@@ -7,6 +7,8 @@ use std::sync::{Arc, Mutex, Once, OnceLock};
 
 /// Keeps the application Context alive after passing its raw pointer to ndk-context.
 static CONTEXT_HOLDER: OnceLock<Global<JObject>> = OnceLock::new();
+static PERMISSION_HELPER_CLASS: OnceLock<Global<JClass>> = OnceLock::new();
+static BADGE_HELPER_CLASS: OnceLock<Global<JClass>> = OnceLock::new();
 static ACTIVITY: Mutex<Option<Arc<Global<JObject>>>> = Mutex::new(None);
 static ANDROID_CONTEXT_INIT: Once = Once::new();
 
@@ -43,6 +45,23 @@ pub extern "system" fn Java_com_flutter_1rust_1bridge_xue_1hua_1app_1badge_XueHu
                     ndk_context::initialize_android_context(vm_ptr, ctx_ptr);
                 }
                 let _ = CONTEXT_HOLDER.set(global_ref);
+
+                if let Ok(perm_class) =
+                    env.find_class(jni_str!("com/flutter_rust_bridge/xue_hua_app_badge/PermissionHelper"))
+                {
+                    if let Ok(global_perm) = env.new_global_ref(perm_class) {
+                        let _ = PERMISSION_HELPER_CLASS.set(global_perm);
+                    }
+                }
+
+                if let Ok(badge_class) =
+                    env.find_class(jni_str!("com/flutter_rust_bridge/xue_hua_app_badge/BadgeHelper"))
+                {
+                    if let Ok(global_badge) = env.new_global_ref(badge_class) {
+                        let _ = BADGE_HELPER_CLASS.set(global_badge);
+                    }
+                }
+
                 Ok(())
             })
             .resolve_with::<LogContextErrorAndDefault, _>(|| {
@@ -89,13 +108,23 @@ pub fn call_badge_helper(count: i32) -> Result<(), String> {
     let applied = vm
         .attach_current_thread(|env| -> JniResult<bool> {
             let context = unsafe { JObject::from_raw(env, ctx_raw) };
-            env.call_static_method(
-                jni_str!("com/flutter_rust_bridge/xue_hua_app_badge/BadgeHelper"),
-                jni_str!("applyBadge"),
-                jni_sig!("(Landroid/content/Context;I)Z"),
-                &[JValue::Object(&context), JValue::Int(badge_count as jint)],
-            )?
-            .z()
+            if let Some(class_ref) = BADGE_HELPER_CLASS.get() {
+                env.call_static_method(
+                    class_ref,
+                    jni_str!("applyBadge"),
+                    jni_sig!("(Landroid/content/Context;I)Z"),
+                    &[JValue::Object(&context), JValue::Int(badge_count as jint)],
+                )?
+                .z()
+            } else {
+                env.call_static_method(
+                    jni_str!("com/flutter_rust_bridge/xue_hua_app_badge/BadgeHelper"),
+                    jni_str!("applyBadge"),
+                    jni_sig!("(Landroid/content/Context;I)Z"),
+                    &[JValue::Object(&context), JValue::Int(badge_count as jint)],
+                )?
+                .z()
+            }
         })
         .map_err(|e| format!("BadgeHelper.applyBadge JNI call failed: {e}"))?;
 
@@ -112,13 +141,23 @@ pub fn call_is_badge_permission_granted() -> Result<bool, String> {
 
     vm.attach_current_thread(|env| -> JniResult<bool> {
         let context = unsafe { JObject::from_raw(env, ctx_raw) };
-        env.call_static_method(
-            jni_str!("com/flutter_rust_bridge/xue_hua_app_badge/PermissionHelper"),
-            jni_str!("isBadgePermissionGranted"),
-            jni_sig!("(Landroid/content/Context;)Z"),
-            &[JValue::Object(&context)],
-        )?
-        .z()
+        if let Some(class_ref) = PERMISSION_HELPER_CLASS.get() {
+            env.call_static_method(
+                class_ref,
+                jni_str!("isBadgePermissionGranted"),
+                jni_sig!("(Landroid/content/Context;)Z"),
+                &[JValue::Object(&context)],
+            )?
+            .z()
+        } else {
+            env.call_static_method(
+                jni_str!("com/flutter_rust_bridge/xue_hua_app_badge/PermissionHelper"),
+                jni_str!("isBadgePermissionGranted"),
+                jni_sig!("(Landroid/content/Context;)Z"),
+                &[JValue::Object(&context)],
+            )?
+            .z()
+        }
     })
     .map_err(|e| format!("PermissionHelper.isBadgePermissionGranted JNI call failed: {e}"))
 }
@@ -132,13 +171,23 @@ pub fn call_request_badge_permission() -> Result<bool, String> {
         .ok_or("Android activity not available; ensure Flutter activity is attached")?;
 
     vm.attach_current_thread(|env| -> JniResult<bool> {
-        env.call_static_method(
-            jni_str!("com/flutter_rust_bridge/xue_hua_app_badge/PermissionHelper"),
-            jni_str!("requestBadgePermission"),
-            jni_sig!("(Landroid/app/Activity;)Z"),
-            &[JValue::Object(activity.as_ref())],
-        )?
-        .z()
+        if let Some(class_ref) = PERMISSION_HELPER_CLASS.get() {
+            env.call_static_method(
+                class_ref,
+                jni_str!("requestBadgePermission"),
+                jni_sig!("(Landroid/app/Activity;)Z"),
+                &[JValue::Object(activity.as_ref())],
+            )?
+            .z()
+        } else {
+            env.call_static_method(
+                jni_str!("com/flutter_rust_bridge/xue_hua_app_badge/PermissionHelper"),
+                jni_str!("requestBadgePermission"),
+                jni_sig!("(Landroid/app/Activity;)Z"),
+                &[JValue::Object(activity.as_ref())],
+            )?
+            .z()
+        }
     })
     .map_err(|e| format!("PermissionHelper.requestBadgePermission JNI call failed: {e}"))
 }

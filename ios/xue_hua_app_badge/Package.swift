@@ -12,12 +12,16 @@ let package = Package(
             targets: ["xue_hua_app_badge"]
         )
     ],
-    dependencies: [],
+    dependencies: [
+        .package(name: "FlutterFramework", path: "../FlutterFramework")
+    ],
     targets: [
         .target(
             name: "xue_hua_app_badge",
-            dependencies: [],
-            path: "../Classes"
+            dependencies: [
+                .product(name: "FlutterFramework", package: "FlutterFramework")
+            ],
+            resources: []
         )
     ]
 )

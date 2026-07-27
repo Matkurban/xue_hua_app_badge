@@ -9,7 +9,7 @@ Cross-platform Flutter app badge plugin supporting Android, iOS, macOS, Windows,
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Matkurban' => '3496354336@qq.com' }
   s.source           = { :path => '.' }
-  s.source_files     = 'Classes/**/*'
+  s.source_files     = 'xue_hua_app_badge/Sources/xue_hua_app_badge/**/*'
   s.dependency 'Flutter'
   s.platform         = :ios, '12.0'
 

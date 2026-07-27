@@ -1,3 +1,8 @@
+## 1.0.9
+
+* Android: Fix JNI `ClassNotFoundException` linkage error when calling `PermissionHelper` or `BadgeHelper` static methods from Rust background threads. Cache global class references (`Global<JClass>`) during `initAndroid` on the Java main thread to bypass system `BootClassLoader` restrictions on attached native threads.
+* Android: Add `@Keep` annotations to `PermissionHelper`, `BadgeHelper`, and `XueHuaAppBadgePlugin`, and add `consumer-rules.pro` to prevent R8 / ProGuard minification from stripping or obfuscating JNI target classes in release builds.
+
 ## 1.0.8
 
 * Android: Fix main-thread deadlock that froze the app for 30s and triggered an ANR when `requestPermission()` was called on Android 13+ without `POST_NOTIFICATIONS` granted. The permission result is dispatched on the main thread, so waiting for it there could never complete.

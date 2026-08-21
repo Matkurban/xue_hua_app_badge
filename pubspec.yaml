@@ -1,11 +1,12 @@
 name: xue_hua_app_badge
 description: "Cross-platform Flutter app badge plugin. Supports Android, iOS, macOS, Windows, and Linux via a unified set/remove/permission API."
-version: 2.0.0
+version: 2.0.1
 homepage: https://github.com/Matkurban/xue_hua_app_badge
 repository: https://github.com/Matkurban/xue_hua_app_badge
 topics:
   - badge
   - app
+  - app-badge
 
 environment:
   sdk: ^3.12.2
@@ -14,7 +15,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  plugin_platform_interface: ^2.0.2
+  plugin_platform_interface: ^2.1.8
 
 dev_dependencies:
   flutter_test:

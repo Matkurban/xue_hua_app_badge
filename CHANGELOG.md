@@ -1,3 +1,9 @@
+# Changelog
+
+## 2.0.1
+
+- The Gradle tool version has been downgraded to 8.13.2.
+
 ## 2.0.0
 
 * **Complete Architecture Refactoring**: Removed `flutter_rust_bridge`, `ffi`, `ffigen`, CargoKit, and Rust core dependencies. Replaced with standard platform `MethodChannel` native implementations across Android, iOS, macOS, Windows, and Linux.

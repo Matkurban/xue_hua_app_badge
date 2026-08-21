@@ -12,7 +12,7 @@ Cross-platform Flutter app badge plugin supporting Android, iOS, macOS, Windows,
   s.source_files     = 'xue_hua_app_badge/Sources/xue_hua_app_badge/**/*'
   s.dependency 'FlutterMacOS'
 
-  s.platform         = :osx, '10.14'
+  s.platform         = :osx, '10.15'
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
   s.swift_version = '5.0'
 end

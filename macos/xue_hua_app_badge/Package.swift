@@ -4,7 +4,7 @@ import PackageDescription
 let package = Package(
     name: "xue_hua_app_badge",
     platforms: [
-        .macOS(.v10_14),
+        .macOS(.v10_15),
     ],
     products: [
         .library(

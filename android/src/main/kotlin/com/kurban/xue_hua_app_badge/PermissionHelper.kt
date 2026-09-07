@@ -18,10 +18,7 @@ class PermissionHelper : PluginRegistry.RequestPermissionsResultListener {
 
         @JvmStatic
         fun isBadgePermissionGranted(context: Context): Boolean {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                return true
-            }
-            return ContextCompat.checkSelfPermission(
+            return Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU || ContextCompat.checkSelfPermission(
                 context,
                 Manifest.permission.POST_NOTIFICATIONS,
             ) == PackageManager.PERMISSION_GRANTED

@@ -1,11 +1,13 @@
 package com.kurban.xue_hua_app_badge.vendor
 
+import android.annotation.SuppressLint
 import android.content.ContentProviderClient
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import androidx.core.net.toUri
 
 internal object VivoBadge : VendorBadge {
     const val INTENT_ACTION = "launcher.action.CHANGE_APPLICATION_NOTIFICATION_NUM"
@@ -13,7 +15,7 @@ internal object VivoBadge : VendorBadge {
     const val EXTRA_CLASS_NAME = "className"
     const val EXTRA_NOTIFICATION_NUM = "notificationNum"
     val ORIGIN_OS_URI: Uri =
-        Uri.parse("content://com.vivo.abe.provider.launcher.notification.num")
+        "content://com.vivo.abe.provider.launcher.notification.num".toUri()
 
     private const val FLAG_RECEIVER_INCLUDE_BACKGROUND = 0x01000000
 
@@ -26,6 +28,7 @@ internal object VivoBadge : VendorBadge {
         return broadcastApplied || originOsApplied
     }
 
+    @SuppressLint("WrongConstant")
     private fun sendOfficialBroadcast(context: Context, count: Int): Boolean {
         val className = LauncherComponent.className(context) ?: return false
         return try {
@@ -73,12 +76,7 @@ internal object VivoBadge : VendorBadge {
             return
         }
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                client.close()
-            } else {
-                @Suppress("DEPRECATION")
-                client.release()
-            }
+            client.close()
         } catch (_: Exception) {
         }
     }

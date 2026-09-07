@@ -35,11 +35,7 @@ object BadgeHelper {
         }
 
         val notificationApplied =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                BadgeNotifications.applyDotFallback(context, safeCount)
-            } else {
-                false
-            }
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && BadgeNotifications.applyDotFallback(context, safeCount)
 
         return vendorApplied || notificationApplied
     }

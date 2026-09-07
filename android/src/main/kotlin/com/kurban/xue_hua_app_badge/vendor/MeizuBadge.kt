@@ -2,11 +2,12 @@ package com.kurban.xue_hua_app_badge.vendor
 
 import android.content.Context
 import android.net.Uri
+import androidx.core.net.toUri
 
 internal object MeizuBadge : VendorBadge {
     const val KEY_BADGE_NUMBER = "badge_number"
     val CONTENT_URI: Uri =
-        Uri.parse("content://com.meizu.flyme.launcher.app_extras/badge_extras")
+        "content://com.meizu.flyme.launcher.app_extras/badge_extras".toUri()
 
     override fun matches(manufacturer: String): Boolean = manufacturer.matchesManufacturer("Meizu")
 

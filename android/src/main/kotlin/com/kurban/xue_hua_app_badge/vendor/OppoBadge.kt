@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import androidx.core.net.toUri
 
 internal object OppoBadge : VendorBadge {
     const val INTENT_ACTION = "com.oppo.unsettledevent"
@@ -12,7 +13,7 @@ internal object OppoBadge : VendorBadge {
     const val EXTRA_UPGRADE_NUMBER = "upgradeNumber"
     const val EXTRA_APP_BADGE_COUNT = "app_badge_count"
     const val PROVIDER_METHOD = "setAppBadgeCount"
-    val CONTENT_URI: Uri = Uri.parse("content://com.android.badge/badge")
+    val CONTENT_URI: Uri = "content://com.android.badge/badge".toUri()
 
     override fun matches(manufacturer: String): Boolean =
         manufacturer.matchesManufacturer("OPPO", "OnePlus", "realme")

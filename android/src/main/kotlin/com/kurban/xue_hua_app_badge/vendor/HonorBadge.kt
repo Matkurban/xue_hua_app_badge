@@ -3,10 +3,11 @@ package com.kurban.xue_hua_app_badge.vendor
 import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
+import androidx.core.net.toUri
 
 internal object HonorBadge : VendorBadge {
-    val URI_NEW: Uri = Uri.parse("content://com.hihonor.android.launcher.settings/badge/")
-    val URI_OLD: Uri = Uri.parse("content://com.huawei.android.launcher.settings/badge/")
+    val URI_NEW: Uri = "content://com.hihonor.android.launcher.settings/badge/".toUri()
+    val URI_OLD: Uri = "content://com.huawei.android.launcher.settings/badge/".toUri()
 
     override fun matches(manufacturer: String): Boolean = manufacturer.matchesManufacturer("HONOR")
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.1.1
+
+- streamline URI initialization and permission checks in badge handling classes
+
 ## 2.1.0
 
 - Android: Honor, Huawei, Xiaomi, OPPO, vivo, and Meizu now use each OEM's official badge API instead of ShortcutBadger for those devices.

@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'xue_hua_app_badge'
-  s.version          = '2.0.0'
+  s.version          = '2.1.0'
   s.summary          = 'Cross-platform Flutter app badge plugin.'
   s.description      = <<-DESC
 Cross-platform Flutter app badge plugin supporting Android, iOS, macOS, Windows, and Linux via a unified set/remove/permission API.

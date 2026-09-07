@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "com.kurban.xue_hua_app_badge"
-version = "2.0.0"
+version = "2.1.0"
 
 plugins {
     id("com.android.library")
@@ -58,8 +58,6 @@ android {
         unitTests {
             isIncludeAndroidResources = true
             all {
-                it.useJUnitPlatform()
-
                 it.outputs.upToDateWhen { false }
 
                 it.testLogging {

@@ -1,7 +1,27 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.kurban.xue_hua_app_badge">
 
-    <!-- ShortcutBadger vendor permissions -->
+    <!-- Honor / Huawei official badge providers -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="com.huawei.android.launcher.permission.CHANGE_BADGE"/>
+    <uses-permission android:name="com.huawei.android.launcher.permission.READ_SETTINGS"/>
+    <uses-permission android:name="com.huawei.android.launcher.permission.WRITE_SETTINGS"/>
+    <uses-permission android:name="com.hihonor.android.launcher.permission.CHANGE_BADGE"/>
+    <uses-permission android:name="com.hihonor.android.launcher.permission.READ_SETTINGS"/>
+    <uses-permission android:name="com.hihonor.android.launcher.permission.WRITE_SETTINGS"/>
+
+    <!-- OPPO / ColorOS -->
+    <uses-permission android:name="com.oppo.launcher.permission.READ_SETTINGS"/>
+    <uses-permission android:name="com.oppo.launcher.permission.WRITE_SETTINGS"/>
+
+    <!-- vivo / OriginOS -->
+    <uses-permission android:name="com.vivo.notification.permission.BADGE_ICON"/>
+    <uses-permission android:name="com.vivo.abe.permission.launcher.notification.num"/>
+
+    <!-- Meizu / Flyme -->
+    <uses-permission android:name="com.meizu.flyme.launcher.permission.WRITE_BADGE_EXTRAS"/>
+
+    <!-- ShortcutBadger vendor permissions (other OEMs) -->
     <uses-permission android:name="com.sec.android.provider.badge.permission.READ"/>
     <uses-permission android:name="com.sec.android.provider.badge.permission.WRITE"/>
     <uses-permission android:name="com.htc.launcher.permission.READ_SETTINGS"/>
@@ -10,16 +30,9 @@
     <uses-permission android:name="com.sonymobile.home.permission.PROVIDER_INSERT_BADGE"/>
     <uses-permission android:name="com.anddoes.launcher.permission.UPDATE_COUNT"/>
     <uses-permission android:name="com.majeur.launcher.permission.UPDATE_BADGE"/>
-    <uses-permission android:name="com.huawei.android.launcher.permission.CHANGE_BADGE"/>
-    <uses-permission android:name="com.huawei.android.launcher.permission.READ_SETTINGS"/>
-    <uses-permission android:name="com.huawei.android.launcher.permission.WRITE_SETTINGS"/>
     <uses-permission android:name="android.permission.READ_APP_BADGE"/>
-    <uses-permission android:name="com.oppo.launcher.permission.READ_SETTINGS"/>
-    <uses-permission android:name="com.oppo.launcher.permission.WRITE_SETTINGS"/>
     <uses-permission android:name="me.everything.badger.permission.BADGE_COUNT_READ"/>
     <uses-permission android:name="me.everything.badger.permission.BADGE_COUNT_WRITE"/>
-    <uses-permission android:name="com.vivo.notification.permission.BADGE_ICON"/>
-    <uses-permission android:name="com.vivo.abe.permission.launcher.notification.num"/>
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 

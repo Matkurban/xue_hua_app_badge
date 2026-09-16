@@ -59,22 +59,27 @@ class XueHuaAppBadgePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
             "isSupported" -> {
                 result.success(true)
             }
+
             "setBadge" -> {
                 val count = call.argument<Int>("count") ?: 0
                 val applied = BadgeHelper.applyBadge(ctx, count)
                 result.success(applied)
             }
+
             "removeBadge" -> {
                 val applied = BadgeHelper.applyBadge(ctx, 0)
                 result.success(applied)
             }
+
             "requestPermission" -> {
                 permissionHelper.requestBadgePermission(activityBinding?.activity, result)
             }
+
             "isPermissionGranted" -> {
                 val granted = PermissionHelper.isBadgePermissionGranted(ctx)
                 result.success(granted)
             }
+
             else -> {
                 result.notImplemented()
             }

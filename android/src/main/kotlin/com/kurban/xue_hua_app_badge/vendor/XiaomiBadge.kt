@@ -76,7 +76,10 @@ internal object XiaomiBadge : VendorBadge {
             field.isAccessible = true
             val extraNotification = field.get(notification) ?: return
             val method: Method =
-                extraNotification.javaClass.getDeclaredMethod("setMessageCount", Int::class.javaPrimitiveType)
+                extraNotification.javaClass.getDeclaredMethod(
+                    "setMessageCount",
+                    Int::class.javaPrimitiveType
+                )
             method.invoke(extraNotification, count)
         } catch (_: Exception) {
         }

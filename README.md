@@ -15,7 +15,7 @@ Cross-platform Flutter app badge plugin. Implemented using standard platform **M
 ## Platform Support
 
 | Platform    | Mechanism                                                                                                                                                      | Status                              |
-| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------|
 | **macOS**   | `NSApplication.dockTile.badgeLabel`                                                                                                                            | Implemented (Swift + SPM/CocoaPods) |
 | **Windows** | `ITaskbarList3::SetOverlayIcon` (C++ Win32 COM + GDI)                                                                                                          | Implemented                         |
 | **Linux**   | D-Bus `com.canonical.Unity.LauncherEntry` (C++ GTK + GDBus)                                                                                                    | Implemented                         |
@@ -53,7 +53,7 @@ await XueHuaAppBadge.instance.remove();
 The plugin exposes explicit permission APIs (**no automatic prompt on `set()`**):
 
 | Platform                    | Permission                       | Notes                                                                                                                                                  |
-| --------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+|-----------------------------|----------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **iOS 16+**                 | Notification badge authorization | `requestPermission()` shows the system dialog                                                                                                          |
 | **Android 13+**             | `POST_NOTIFICATIONS`             | Required for the notification fallback path. OEM launcher permissions are merged from the plugin manifest; the host app does not need to declare them. |
 | **macOS / Windows / Linux** | None                             | Always return `true`                                                                                                                                   |

@@ -88,7 +88,10 @@ class BadgeHelperTest {
         assertEquals(0, newProvider.callCount)
         assertEquals(1, oldProvider.callCount)
         assertEquals(ChangeBadgeCall.METHOD, oldProvider.lastMethod)
-        assertEquals(context.packageName, oldProvider.lastExtras?.getString(ChangeBadgeCall.KEY_PACKAGE))
+        assertEquals(
+            context.packageName,
+            oldProvider.lastExtras?.getString(ChangeBadgeCall.KEY_PACKAGE)
+        )
         assertEquals(
             TestLauncherActivity::class.java.name,
             oldProvider.lastExtras?.getString(ChangeBadgeCall.KEY_CLASS),
@@ -106,7 +109,10 @@ class BadgeHelperTest {
         setManufacturer("HUAWEI")
         assertTrue(HuaweiBadge.setBadge(context, 5))
         assertEquals(ChangeBadgeCall.METHOD, provider.lastMethod)
-        assertEquals(context.packageName, provider.lastExtras?.getString(ChangeBadgeCall.KEY_PACKAGE))
+        assertEquals(
+            context.packageName,
+            provider.lastExtras?.getString(ChangeBadgeCall.KEY_PACKAGE)
+        )
         assertEquals(
             TestLauncherActivity::class.java.name,
             provider.lastExtras?.getString(ChangeBadgeCall.KEY_CLASS),
@@ -164,7 +170,10 @@ class BadgeHelperTest {
         assertTrue(MeizuBadge.setBadge(context, 3))
         assertEquals(ChangeBadgeCall.METHOD, provider.lastMethod)
         assertEquals(3, provider.lastExtras?.getInt(MeizuBadge.KEY_BADGE_NUMBER))
-        assertEquals(context.packageName, provider.lastExtras?.getString(ChangeBadgeCall.KEY_PACKAGE))
+        assertEquals(
+            context.packageName,
+            provider.lastExtras?.getString(ChangeBadgeCall.KEY_PACKAGE)
+        )
     }
 
     @Test

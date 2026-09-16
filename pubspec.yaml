@@ -9,7 +9,7 @@ topics:
   - app-badge
 
 environment:
-  sdk: ^3.12.2
+  sdk: ^3.12.0
   flutter: '>=3.44.0'
 
 dependencies:

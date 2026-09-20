@@ -15,7 +15,7 @@ Cross-platform Flutter app badge plugin. Implemented using standard platform **M
 ## Platform Support
 
 | Platform    | Mechanism                                                                                                                                                      | Status                              |
-|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------|
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
 | **macOS**   | `NSApplication.dockTile.badgeLabel`                                                                                                                            | Implemented (Swift + SPM/CocoaPods) |
 | **Windows** | `ITaskbarList3::SetOverlayIcon` (C++ Win32 COM + GDI)                                                                                                          | Implemented                         |
 | **Linux**   | D-Bus `com.canonical.Unity.LauncherEntry` (C++ GTK + GDBus)                                                                                                    | Implemented                         |
@@ -26,7 +26,7 @@ Cross-platform Flutter app badge plugin. Implemented using standard platform **M
 
 ```yaml
 dependencies:
-  xue_hua_app_badge: ^2.1.1
+  xue_hua_app_badge: ^2.1.2
 ```
 
 ## Quick Start
@@ -53,7 +53,7 @@ await XueHuaAppBadge.instance.remove();
 The plugin exposes explicit permission APIs (**no automatic prompt on `set()`**):
 
 | Platform                    | Permission                       | Notes                                                                                                                                                  |
-|-----------------------------|----------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
+| --------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **iOS 16+**                 | Notification badge authorization | `requestPermission()` shows the system dialog                                                                                                          |
 | **Android 13+**             | `POST_NOTIFICATIONS`             | Required for the notification fallback path. OEM launcher permissions are merged from the plugin manifest; the host app does not need to declare them. |
 | **macOS / Windows / Linux** | None                             | Always return `true`                                                                                                                                   |
@@ -87,6 +87,16 @@ iOS (Swift)       ← UNUserNotificationCenter / UIApplication
 macOS (Swift)     ← NSApp.dockTile
 Windows (C++)     ← ITaskbarList3::SetOverlayIcon (GDI)
 Linux (C++)       ← GDBus Unity LauncherEntry Update
+```
+
+## AI agent skills
+
+This package ships Agent Skills under `skills/`. After adding the dependency, install them into your coding agent:
+
+```bash
+dart run skills@ get
+# or only this package:
+dart run skills@ get xue_hua_app_badge
 ```
 
 ## License

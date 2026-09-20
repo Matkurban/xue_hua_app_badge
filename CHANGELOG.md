@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.1.2
+
+- Ship Agent Skills under `skills/` so coding agents can install `XueHuaAppBadge` usage rules with `dart run skills@ get`.
+
 ## 2.1.1
 
 - streamline URI initialization and permission checks in badge handling classes

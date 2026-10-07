@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.1.3
+
+- Android: Upgrade the build toolchain to Android Gradle Plugin 9.1.0, Gradle 9.3.1, and Kotlin 2.4.0.
+- Android: Upgrade `androidx.core:core-ktx` to 1.18.0, `androidx.test:core` to 1.7.0, and Robolectric to 4.17 so they stay compatible with this toolchain and `compileSdk` 36.
+- Android: Pin the Robolectric default test SDK to API 28 so unit tests keep running on JDK 17.
+
 ## 2.1.2
 
 - Ship Agent Skills under `skills/` so coding agents can install `XueHuaAppBadge` usage rules with `dart run skills@ get`.

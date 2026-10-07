@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.example.xue_hua_app_badge_example"
-    compileSdk = 37
+    compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

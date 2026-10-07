@@ -1,1 +1,1 @@
-
+-keep class com.flutter_rust_bridge.xue_hua_app_badge.** { *; }

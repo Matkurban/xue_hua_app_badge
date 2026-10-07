@@ -10,14 +10,14 @@ plugins {
 }
 
 buildscript {
-    val kotlinVersion = "2.4.0"
+    val kotlinVersion = "2.3.20"
     repositories {
         google()
         mavenCentral()
     }
 
     dependencies {
-        classpath("com.android.tools.build:gradle:9.1.1")
+        classpath("com.android.tools.build:gradle:8.13.2")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     }
 }
@@ -34,7 +34,7 @@ allprojects {
 android {
     namespace = "com.kurban.xue_hua_app_badge"
 
-    compileSdk = 37
+    compileSdk = 36
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

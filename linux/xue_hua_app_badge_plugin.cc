@@ -56,12 +56,12 @@ static void emit_unity_badge_signal(int count) {
 static void xue_hua_app_badge_plugin_handle_method_call(
     XueHuaAppBadgePlugin* self,
     FlMethodCall* method_call) {
-  g_autorelease FlMethodResponse* response = nullptr;
+  g_autoptr(FlMethodResponse) response = nullptr;
 
   const gchar* method = fl_method_call_get_name(method_call);
 
   if (strcmp(method, "isSupported") == 0) {
-    g_autorelease FlValue* value = fl_value_new_bool(TRUE);
+    g_autoptr(FlValue) value = fl_value_new_bool(TRUE);
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(value));
   } else if (strcmp(method, "setBadge") == 0) {
     FlValue* args = fl_method_call_get_args(method_call);
@@ -73,15 +73,15 @@ static void xue_hua_app_badge_plugin_handle_method_call(
       }
     }
     emit_unity_badge_signal(count);
-    g_autorelease FlValue* value = fl_value_new_bool(TRUE);
+    g_autoptr(FlValue) value = fl_value_new_bool(TRUE);
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(value));
   } else if (strcmp(method, "removeBadge") == 0) {
     emit_unity_badge_signal(0);
-    g_autorelease FlValue* value = fl_value_new_bool(TRUE);
+    g_autoptr(FlValue) value = fl_value_new_bool(TRUE);
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(value));
   } else if (strcmp(method, "requestPermission") == 0 ||
              strcmp(method, "isPermissionGranted") == 0) {
-    g_autorelease FlValue* value = fl_value_new_bool(TRUE);
+    g_autoptr(FlValue) value = fl_value_new_bool(TRUE);
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(value));
   } else {
     response = FL_METHOD_RESPONSE(fl_method_not_implemented_response_new());
@@ -110,8 +110,8 @@ void xue_hua_app_badge_plugin_register_with_registrar(FlPluginRegistrar* registr
   XueHuaAppBadgePlugin* plugin = XUE_HUA_APP_BADGE_PLUGIN(
       g_object_new(xue_hua_app_badge_plugin_get_type(), nullptr));
 
-  g_autorelease FlStandardMethodCodec* codec = fl_standard_method_codec_new();
-  g_autorelease FlMethodChannel* channel =
+  g_autoptr(FlStandardMethodCodec) codec = fl_standard_method_codec_new();
+  g_autoptr(FlMethodChannel) channel =
       fl_method_channel_new(fl_plugin_registrar_get_messenger(registrar),
                             "xue_hua_app_badge", FL_METHOD_CODEC(codec));
   fl_method_channel_set_method_call_handler(channel, method_call_cb,

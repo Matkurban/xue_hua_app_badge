@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.1.4
+
+- Linux: Fix build failure caused by the nonexistent `g_autorelease` macro; use GLib `g_autoptr(...)` for automatic cleanup instead.
+
 ## 2.1.3
 
 - Android: Upgrade the build toolchain to Android Gradle Plugin 9.1.0, Gradle 9.3.1, and Kotlin 2.4.0.

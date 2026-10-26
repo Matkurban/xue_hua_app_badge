@@ -14,43 +14,64 @@
 
 G_DEFINE_TYPE(XueHuaAppBadgePlugin, xue_hua_app_badge_plugin, g_object_get_type())
 
-static void emit_unity_badge_signal(int count) {
-  GError* error = NULL;
-  GDBusConnection* connection = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, &error);
-  if (!connection) {
-    if (error) g_error_free(error);
-    return;
+// Unity LauncherEntry app_uri is application://<desktop-file-basename>,
+// including the .desktop suffix. Flutter sets GAPPLICATION_ID to the
+// application id (no suffix). GIO_LAUNCHED_DESKTOP_FILE may be a full path.
+static std::string launcher_desktop_file_id() {
+  const char* raw = g_getenv("GIO_LAUNCHED_DESKTOP_FILE");
+  if (raw == nullptr || raw[0] == '\0') {
+    raw = g_getenv("GAPPLICATION_ID");
   }
 
-  const char* desktop_id = g_getenv("GIO_LAUNCHED_DESKTOP_FILE");
-  if (!desktop_id) {
-    desktop_id = g_getenv("GAPPLICATION_ID");
+  std::string id = (raw != nullptr) ? raw : "";
+  const auto slash = id.find_last_of('/');
+  if (slash != std::string::npos) {
+    id.erase(0, slash + 1);
   }
-  std::string app_uri = "application://";
-  if (desktop_id && strlen(desktop_id) > 0) {
-    app_uri += desktop_id;
-  } else {
-    app_uri += "flutter.desktop";
+  if (id.empty()) {
+    return "flutter.desktop";
   }
+
+  static constexpr char kDesktopSuffix[] = ".desktop";
+  constexpr size_t kDesktopSuffixLen = sizeof(kDesktopSuffix) - 1;
+  if (id.size() < kDesktopSuffixLen ||
+      id.compare(id.size() - kDesktopSuffixLen, kDesktopSuffixLen,
+                 kDesktopSuffix) != 0) {
+    id.append(kDesktopSuffix);
+  }
+  return id;
+}
+
+static void emit_unity_badge_signal(int count) {
+  if (count < 0) {
+    count = 0;
+  }
+
+  g_autoptr(GError) error = nullptr;
+  g_autoptr(GDBusConnection) connection =
+      g_bus_get_sync(G_BUS_TYPE_SESSION, nullptr, &error);
+  if (connection == nullptr) {
+    return;
+  }
+  // A later emit must see a clear GError out-parameter.
+  g_clear_error(&error);
+
+  const std::string app_uri =
+      std::string("application://") + launcher_desktop_file_id();
 
   GVariantBuilder builder;
   g_variant_builder_init(&builder, G_VARIANT_TYPE("a{sv}"));
+  g_variant_builder_add(&builder, "{sv}", "count",
+                        g_variant_new_int64(static_cast<gint64>(count)));
+  g_variant_builder_add(
+      &builder, "{sv}", "count-visible",
+      g_variant_new_boolean(count > 0 ? TRUE : FALSE));
 
-  if (count > 0) {
-    g_variant_builder_add(&builder, "{sv}", "count", g_variant_new_int64(static_cast<gint64>(count)));
-    g_variant_builder_add(&builder, "{sv}", "count-visible", g_variant_new_boolean(TRUE));
-  } else {
-    g_variant_builder_add(&builder, "{sv}", "count-visible", g_variant_new_boolean(FALSE));
-  }
-
+  // g_variant_new consumes the builder. emit_signal sinks the floating variant.
   GVariant* params = g_variant_new("(sa{sv})", app_uri.c_str(), &builder);
-
   g_dbus_connection_emit_signal(
-      connection, NULL, "/com/canonical/unity/launcherentry/1",
+      connection, nullptr, "/com/canonical/unity/launcherentry/1",
       "com.canonical.Unity.LauncherEntry", "Update", params, &error);
-
-  if (error) g_error_free(error);
-  g_object_unref(connection);
 }
 
 static void xue_hua_app_badge_plugin_handle_method_call(
@@ -66,7 +87,7 @@ static void xue_hua_app_badge_plugin_handle_method_call(
   } else if (strcmp(method, "setBadge") == 0) {
     FlValue* args = fl_method_call_get_args(method_call);
     int count = 0;
-    if (fl_value_get_type(args) == FL_VALUE_TYPE_MAP) {
+    if (args != nullptr && fl_value_get_type(args) == FL_VALUE_TYPE_MAP) {
       FlValue* count_val = fl_value_lookup_string(args, "count");
       if (count_val && fl_value_get_type(count_val) == FL_VALUE_TYPE_INT) {
         count = fl_value_get_int(count_val);

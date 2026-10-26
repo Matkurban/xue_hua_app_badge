@@ -85,7 +85,7 @@ Android channel errors:
 ## Linux
 
 * Emits D-Bus signal `com.canonical.Unity.LauncherEntry` `Update` on `/com/canonical/unity/launcherentry/1`.
-* Desktop file id comes from `GIO_LAUNCHED_DESKTOP_FILE`, else `GAPPLICATION_ID`, else `application://flutter.desktop`.
+* Desktop file id is the `.desktop` basename. Prefer `GIO_LAUNCHED_DESKTOP_FILE` (directory prefix stripped), else `GAPPLICATION_ID`, else `flutter`. A missing `.desktop` suffix is appended. The signal URI is `application://<that id>`. Clearing publishes `count` `0` and `count-visible` false.
 * The badge appears only if the desktop environment implements Unity LauncherEntry (Unity, some GNOME/KDE setups). Completing `set()` does not guarantee a visible badge.
 * Permission methods return `true`.
 

@@ -16,9 +16,9 @@ void main() {
             case 'isSupported':
               return true;
             case 'setBadge':
-              return null;
+              return true;
             case 'removeBadge':
-              return null;
+              return true;
             case 'requestPermission':
               return true;
             case 'isPermissionGranted':
@@ -50,6 +50,33 @@ void main() {
     expect(log, <Matcher>[
       isMethodCall('setBadge', arguments: <String, dynamic>{'count': 5}),
     ]);
+  });
+
+  test(
+    'set forwards windowHandle and accepts a bool platform result',
+    () async {
+      await XueHuaAppBadge.instance.set(2, windowHandle: 42);
+      expect(log, <Matcher>[
+        isMethodCall(
+          'setBadge',
+          arguments: <String, dynamic>{'count': 2, 'windowHandle': 42},
+        ),
+      ]);
+    },
+  );
+
+  test('set rejects a negative count before calling the platform', () async {
+    await expectLater(
+      XueHuaAppBadge.instance.set(-1),
+      throwsA(
+        isA<ArgumentError>().having(
+          (ArgumentError error) => error.message,
+          'message',
+          'Badge count must be >= 0',
+        ),
+      ),
+    );
+    expect(log, isEmpty);
   });
 
   test('remove badge', () async {

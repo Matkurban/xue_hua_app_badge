@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.1.5
+
+- Linux: Address Unity LauncherEntry updates at `application://<desktop-file-id>`. The id is the basename of `GIO_LAUNCHED_DESKTOP_FILE`, otherwise `GAPPLICATION_ID`, otherwise `flutter`, with `.desktop` appended when it is missing. Flutter Linux apps set `GAPPLICATION_ID` to the application id, so the previous URI did not match the desktop file.
+- Linux: Publish `count` `0` together with `count-visible` false when clearing a badge, and ignore a null `setBadge` argument map.
+- Example: Drive the sample UI from one `integration_test` target (plus the integration_test driver) and assert `isSupported`, `set`, `remove`, permission results, and the negative-count error.
+
 ## 2.1.4
 
 - Linux: Fix build failure caused by the nonexistent `g_autorelease` macro; use GLib `g_autoptr(...)` for automatic cleanup instead.

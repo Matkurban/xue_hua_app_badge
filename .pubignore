@@ -1,1 +1,126 @@
+# Pub uses this file INSTEAD of .gitignore in the same directory.
+# The root .gitignore is therefore not applied when publishing. 2.1.7 shipped
+# at ~28MB because this file only listed rust/Cargo.lock, so build/test_cache
+# (kernel dill caches), build/unit_test_assets, and build/native_assets were
+# uploaded. Keep these rules aligned with .gitignore plus Flutter plugin
+# build outputs.
+# https://dart.dev/tools/pub/publishing#what-files-are-published
+
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ / Android Studio / VS Code
+*.iml
+*.ipr
+*.iws
+.idea/
+.vscode/
+
+# Flutter/Dart/Pub
+**/doc/api/
+.dart_tool/
+**/.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/pubspec.lock
+example/pubspec.lock
+pubspec_overrides.yaml
+
+# Build trees. /build/ is only the package root; **/build/ also covers
+# example/build, example/android/build, and other platform outputs.
+/build/
+**/build/
+**/test_cache/
+*.dill
+
+# Coverage and local notes
+/coverage/
+**/coverage/
+CONTEXT.md
+
+# Symbolication / obfuscation
+app.*.symbols
+app.*.map.json
+
+# Android generated output, machine-local config, and signing secrets
+**/.gradle/
+**/local.properties
+**/.cxx/
+**/captures/
+**/android/app/debug/
+**/android/app/profile/
+**/android/app/release/
+key.properties
+**/*.keystore
+**/*.jks
+**/gradle-wrapper.jar
+*.apk
+*.aab
+*.ipa
+
+# iOS / macOS generated output and CocoaPods
+**/dgph
+*.mode1v3
+*.mode2v3
+*.moved-aside
+*.pbxuser
+*.perspectivev3
+!default.mode1v3
+!default.mode2v3
+!default.pbxuser
+!default.perspectivev3
+**/*sync/
+.sconsign.dblite
+.tags*
+**/.vagrant/
+**/DerivedData/
+Icon?
+**/Pods/
+**/.symlinks/
+xcuserdata
+**/xcuserdata/
+**/.generated/
+**/Flutter/ephemeral/
+**/Flutter/App.framework/
+**/Flutter/Flutter.framework/
+**/Flutter/Flutter.podspec
+**/Flutter/Generated.xcconfig
+**/Flutter/.last_build_id
+**/Flutter/app.flx
+**/Flutter/app.zip
+**/Flutter/flutter_assets/
+**/Flutter/flutter_export_environment.sh
+**/ServiceDefinitions.json
+**/GeneratedPluginRegistrant.java
+**/Runner/GeneratedPluginRegistrant.*
+
+# Linux / Windows ephemeral and Visual Studio
+**/flutter/ephemeral/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+x64/
+x86/
+*.[Cc]ache
+!*.[Cc]ache/
+
+# Rust core was removed in 2.0.0. Still ignore a leftover lockfile or target dir.
 rust/Cargo.lock
+rust/target/

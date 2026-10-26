@@ -26,7 +26,7 @@
 
 ```yaml
 dependencies:
-  xue_hua_app_badge: ^2.1.7
+  xue_hua_app_badge: ^2.1.8
 ```
 
 ## 快速开始

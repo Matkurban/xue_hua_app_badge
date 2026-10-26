@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.8
+
+- Publishing: 2.1.7 was 29,973,064 bytes (about 28.6MB). 2.1.6 was 316,716 bytes (about 309KB). `.pubignore` contained only `rust/Cargo.lock`, and when that file exists pub uses it instead of `.gitignore` in the same directory, so the root ignore rules never applied. The archive included `build/test_cache` (two ~45MB `*.cache.dill.track.dill` files), `build/unit_test_assets`, and `build/native_assets`. `.pubignore` now follows `.gitignore` and the usual Flutter plugin publish excludes: `/build/`, `**/build/`, `.dart_tool/`, `**/test_cache/`, `*.dill`, coverage, IDE files, `example/pubspec.lock`, Android/iOS/desktop generated output, and `rust/Cargo.lock`. No API change.
+- Example: Remove the committed Gradle problems report at `example/android/build/reports/problems/problems-report.html` and ignore `example/android/build/`. It is a local build artifact.
+
 ## 2.1.7
 
 - Example macOS: Remove CocoaPods from the example runner so the project is Swift Package Manager only. Deleted `example/macos/Podfile` and `Podfile.lock`, dropped the `Pods/Pods.xcodeproj` reference from `Runner.xcworkspace`, and removed the `Pods-Runner` xcconfig includes from `Flutter-Debug.xcconfig` and `Flutter-Release.xcconfig`. Every macOS plugin in the example is already a Swift package, and the leftover CocoaPods integration made Flutter print the dual-integration warning on every macOS build.

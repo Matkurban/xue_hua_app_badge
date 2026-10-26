@@ -1,4 +1,6 @@
 gradle-wrapper.jar
+# Gradle outputs. example/.gitignore only ignores example/build/, not this tree.
+/build
 /.gradle
 /captures/
 /gradlew

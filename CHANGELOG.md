@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.7
+
+- Example macOS: Remove CocoaPods from the example runner so the project is Swift Package Manager only. Deleted `example/macos/Podfile` and `Podfile.lock`, dropped the `Pods/Pods.xcodeproj` reference from `Runner.xcworkspace`, and removed the `Pods-Runner` xcconfig includes from `Flutter-Debug.xcconfig` and `Flutter-Release.xcconfig`. Every macOS plugin in the example is already a Swift package, and the leftover CocoaPods integration made Flutter print the dual-integration warning on every macOS build.
+- Example macOS: Set `MACOSX_DEPLOYMENT_TARGET` to 12.0 (Debug, Profile, and Release). That is the minimum Flutter 3.47 writes for macOS. `LSMinimumSystemVersion` still follows `$(MACOSX_DEPLOYMENT_TARGET)`. The plugin's own macOS deployment target is unchanged.
+
 ## 2.1.6
 
 - Dart: `remove()` now calls MethodChannel `removeBadge` (and forwards `windowHandle` when it is set) instead of `set(0)`. `set(0)` still clears through `setBadge`. Android, iOS, macOS, Windows, and Linux already clear the badge in `removeBadge` the same way as a zero count, so the visible result is unchanged.

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:xue_hua_app_badge/xue_hua_app_badge.dart';
 
 void main() {
@@ -34,8 +34,7 @@ class _MyAppState extends State<MyApp> {
       final granted = await XueHuaAppBadge.instance.requestPermission();
       if (!granted && mounted) {
         setState(() {
-          _permissionHint =
-              'Badge permission was denied. Enable notifications in system settings.';
+          _permissionHint = 'Badge permission was denied. Enable notifications in system settings.';
         });
       }
     } catch (error) {
@@ -53,6 +52,21 @@ class _MyAppState extends State<MyApp> {
 
     try {
       await XueHuaAppBadge.instance.set(count);
+    } catch (error) {
+      if (mounted) {
+        setState(() => _lastError = error.toString());
+      }
+    }
+  }
+
+  Future<void> _clearBadge() async {
+    setState(() {
+      _badgeCount = 0;
+      _lastError = null;
+    });
+
+    try {
+      await XueHuaAppBadge.instance.remove();
     } catch (error) {
       if (mounted) {
         setState(() => _lastError = error.toString());
@@ -94,7 +108,7 @@ class _MyAppState extends State<MyApp> {
                   ),
                   OutlinedButton(
                     key: const Key('badge_clear'),
-                    onPressed: () => _updateBadge(0),
+                    onPressed: _clearBadge,
                     child: const Text('Clear'),
                   ),
                 ],

@@ -79,10 +79,25 @@ void main() {
     expect(log, isEmpty);
   });
 
-  test('remove badge', () async {
-    await XueHuaAppBadge.instance.remove();
+  test('set zero still calls setBadge', () async {
+    await XueHuaAppBadge.instance.set(0);
     expect(log, <Matcher>[
       isMethodCall('setBadge', arguments: <String, dynamic>{'count': 0}),
+    ]);
+  });
+
+  test('remove badge', () async {
+    await XueHuaAppBadge.instance.remove();
+    expect(log, <Matcher>[isMethodCall('removeBadge', arguments: null)]);
+  });
+
+  test('remove forwards windowHandle', () async {
+    await XueHuaAppBadge.instance.remove(windowHandle: 7);
+    expect(log, <Matcher>[
+      isMethodCall(
+        'removeBadge',
+        arguments: <String, dynamic>{'windowHandle': 7},
+      ),
     ]);
   });
 

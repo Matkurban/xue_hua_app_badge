@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:xue_hua_app_badge/xue_hua_app_badge.dart';
@@ -7,7 +7,7 @@ import 'package:xue_hua_app_badge_example/main.dart' as app;
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('Linux badge API returns expected results', (tester) async {
+  testWidgets('badge API returns expected results', (tester) async {
     expect(await XueHuaAppBadge.instance.isSupported(), isTrue);
     expect(await XueHuaAppBadge.instance.isPermissionGranted(), isTrue);
     expect(await XueHuaAppBadge.instance.requestPermission(), isTrue);

@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.1.6
+
+- Dart: `remove()` now calls MethodChannel `removeBadge` (and forwards `windowHandle` when it is set) instead of `set(0)`. `set(0)` still clears through `setBadge`. Android, iOS, macOS, Windows, and Linux already clear the badge in `removeBadge` the same way as a zero count, so the visible result is unchanged.
+- Example: Rename the integration test to platform-neutral wording. It runs on Windows and Linux, not only Linux.
+- Example: The Clear control calls `remove()`.
+- Example: Import `package:material_ui/material_ui.dart` instead of `package:flutter/material.dart`. Beta 3.50 deprecates the in-framework library (`deprecated_member_use`, which fails `flutter analyze`). `material_ui` 1.8 is the supported replacement on current stable (Flutter 3.47) and on that beta, and it re-exports `package:flutter/widgets.dart`. The example SDK floor is therefore Dart `^3.13.0` and Flutter `>=3.47.0`. The plugin library itself still supports Flutter `>=3.44.0` and does not depend on `material_ui`.
+- Docs: On desktop, run `flutter test integration_test -d <device>` from `example/`. `flutter drive` prints `Warning: integration_test plugin was not detected` because the integration_test native plugin exists for Android and iOS instrumentation only. The desktop VM-service driver has nothing to register, and the warning is not a missing example dependency. `flutter test` does not print it.
+
 ## 2.1.5
 
 - Linux: Address Unity LauncherEntry updates at `application://<desktop-file-id>`. The id is the basename of `GIO_LAUNCHED_DESKTOP_FILE`, otherwise `GAPPLICATION_ID`, otherwise `flutter`, with `.desktop` appended when it is missing. Flutter Linux apps set `GAPPLICATION_ID` to the application id, so the previous URI did not match the desktop file.

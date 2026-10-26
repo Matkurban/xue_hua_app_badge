@@ -21,11 +21,12 @@ Read [references/dart-api.md](references/dart-api.md) before writing call sites.
 * On iOS 16+ and Android 13+, call `isPermissionGranted()` first. If it is `false`, call `requestPermission()`, then `set`. `set()` never shows a permission dialog.
 * `set` and `remove` return `Future<void>`. Do not treat their result as a `bool`. Android native may return whether a launcher applied the badge; Dart discards that value.
 * `count` must be `>= 0`. `set` throws `ArgumentError` for negatives. Clear the badge with `remove()` or `set(0)`.
-* `remove()` calls `set(0)` and therefore invokes MethodChannel `'setBadge'` with `{count: 0}`. Do not invent a Dart `removeBadge()` method.
+* `remove()` invokes MethodChannel `'removeBadge'` (arguments `null`, or `{windowHandle: ...}` when that argument is set). It does not call `set`. `set(0)` still clears via `'setBadge'`. Do not invent a Dart `removeBadge()` method.
 * Pass `windowHandle` only on Windows (HWND as `int`). Other platforms ignore it. Omit it unless targeting a specific Windows window; the plugin then uses the Flutter view's root HWND.
 * Do not call `initialize()`, `greet()`, or any `PlatformInterface` subclass. Those are not part of this package's Dart API.
 * Do not talk to MethodChannel `'xue_hua_app_badge'` from app code. Use `XueHuaAppBadge` only.
 * This plugin registers Android, iOS, macOS, Windows, and Linux. Do not assume Web or a plain Dart VM.
+* Example integration tests on desktop: from `example/`, run `flutter test integration_test -d windows` (or `linux` / `macos`). Do not prefer `flutter drive` for this package. `flutter drive` prints `Warning: integration_test plugin was not detected` on desktop because the integration_test native plugin is Android/iOS instrumentation only. That warning is not a missing dependency in the example, and `flutter test integration_test` does not print it.
 
 ## Examples
 

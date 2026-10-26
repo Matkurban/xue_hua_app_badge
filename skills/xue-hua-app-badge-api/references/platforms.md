@@ -43,6 +43,7 @@ Android OEM launcher permissions (`CHANGE_BADGE`, vivo badge, Meizu, ShortcutBad
 * iOS 16+: `UNUserNotificationCenter.setBadgeCount`.
 * Older iOS: `UIApplication.shared.applicationIconBadgeNumber` on the main queue.
 * `'setBadge'` without a `count` `Int` returns FlutterError `INVALID_ARGUMENT` (`Count argument missing`) → Dart `PlatformException`.
+* `'removeBadge'` calls `setBadgeCount(0)` and does not require a `count` argument. Dart `remove()` uses this method.
 * `setBadgeCount` failure → `SET_BADGE_FAILED`.
 * `requestAuthorization` failure → `PERMISSION_ERROR`.
 
@@ -54,7 +55,7 @@ Apply order in `BadgeHelper.applyBadge`:
 2. If no OEM match, call ShortcutBadger.
 3. Unless the manufacturer is Xiaomi/Redmi/POCO, also try a silent `NotificationChannel` dot fallback on API 26+ (`BadgeNotifications.applyDotFallback`). Xiaomi uses notifications as its official path and does not add that extra fallback.
 
-`set()` completing in Dart does **not** mean a numeric desktop badge appeared.
+`set()` completing in Dart does **not** mean a numeric desktop badge appeared. `'removeBadge'` calls `applyBadge` with count `0`, the same clear path as `'setBadge'` with count `0`.
 
 OEM notes:
 
@@ -66,7 +67,7 @@ OEM notes:
 
 Android channel errors:
 
-* `NO_CONTEXT` — plugin application context is null (`set`, `remove` path via `setBadge`, `isSupported` is not reached the same way; `onMethodCall` fails all methods including permission checks).
+* `NO_CONTEXT` — plugin application context is null. `onMethodCall` fails every method, including `setBadge`, `removeBadge`, and the permission checks.
 * `NO_ACTIVITY` — `requestPermission` on API 33+ with no attached Activity.
 * `ALREADY_REQUESTING` — a `POST_NOTIFICATIONS` request is already in flight.
 
@@ -74,18 +75,20 @@ Android channel errors:
 
 * Sets `NSApp.dockTile.badgeLabel` on the main queue, then `display()`.
 * `'setBadge'` without `count` → `INVALID_ARGUMENT`.
+* `'removeBadge'` calls `setBadgeCount(0)` (`badgeLabel = nil`). Dart `remove()` uses this method. `set(0)` still uses `'setBadge'`.
 * Permission methods return `true`.
 
 ## Windows
 
-* `ITaskbarList3::SetOverlayIcon` with a GDI+ overlay. Missing/zero count clears the overlay.
-* Permission methods return `true`.
-* Handler still returns success (`true`) even if no HWND is found; Dart `set`/`remove` still complete as `void`.
+* `ITaskbarList3::SetOverlayIcon` with a GDI+ overlay. `'setBadge'` with a missing or non-positive count clears the overlay.
+* `'removeBadge'` clears that same overlay (`SetOverlayIcon` with a null icon) and reads `windowHandle` the same way. Dart `remove()` calls `'removeBadge'`. Dart `set(0)` still calls `'setBadge'`.
+* Permission methods return `true`. `isSupported` returns `true`.
+* Handlers still return success (`true`) even if no HWND is found; Dart `set`/`remove` still complete as `void`.
 
 ## Linux
 
 * Emits D-Bus signal `com.canonical.Unity.LauncherEntry` `Update` on `/com/canonical/unity/launcherentry/1`.
-* Desktop file id is the `.desktop` basename. Prefer `GIO_LAUNCHED_DESKTOP_FILE` (directory prefix stripped), else `GAPPLICATION_ID`, else `flutter`. A missing `.desktop` suffix is appended. The signal URI is `application://<that id>`. Clearing publishes `count` `0` and `count-visible` false.
+* Desktop file id is the `.desktop` basename. Prefer `GIO_LAUNCHED_DESKTOP_FILE` (directory prefix stripped), else `GAPPLICATION_ID`, else `flutter`. A missing `.desktop` suffix is appended. The signal URI is `application://<that id>`. Clearing publishes `count` `0` and `count-visible` false. `'removeBadge'` emits that clear signal. Dart `remove()` calls `'removeBadge'`; `set(0)` still calls `'setBadge'`.
 * The badge appears only if the desktop environment implements Unity LauncherEntry (Unity, some GNOME/KDE setups). Completing `set()` does not guarantee a visible badge.
 * Permission methods return `true`.
 

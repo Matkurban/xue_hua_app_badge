@@ -30,9 +30,17 @@ class XueHuaAppBadge {
     await _channel.invokeMethod<void>('setBadge', arguments);
   }
 
-  /// Removes the application icon badge count.
+  /// Removes the application icon badge.
+  ///
+  /// Calls the native `removeBadge` handler. Every supported platform clears
+  /// the badge there the same way as [set] with `0`, which still uses
+  /// `setBadge`. Pass [windowHandle] only when a specific Windows HWND should
+  /// be cleared; other platforms ignore it.
   Future<void> remove({int? windowHandle}) async {
-    await set(0, windowHandle: windowHandle);
+    final Map<String, dynamic>? arguments = windowHandle == null
+        ? null
+        : <String, dynamic>{'windowHandle': windowHandle};
+    await _channel.invokeMethod<void>('removeBadge', arguments);
   }
 
   /// Shows the platform permission prompt and resolves with the user's answer.

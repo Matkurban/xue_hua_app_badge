@@ -26,7 +26,7 @@ Cross-platform Flutter app badge plugin. Implemented using standard platform **M
 
 ```yaml
 dependencies:
-  xue_hua_app_badge: ^2.1.5
+  xue_hua_app_badge: ^2.1.6
 ```
 
 ## Quick Start
@@ -98,6 +98,23 @@ dart run skills@ get
 # or only this package:
 dart run skills@ get xue_hua_app_badge
 ```
+
+## Tests
+
+From the repository root:
+
+```bash
+flutter test
+```
+
+From `example/`, desktop integration tests:
+
+```bash
+flutter test integration_test -d windows
+# or: -d linux / -d macos
+```
+
+`flutter drive --driver=test_driver/integration_test.dart --target=integration_test/badge_test.dart` can print `Warning: integration_test plugin was not detected` on Windows and Linux. The integration_test native plugin is only registered for Android and iOS instrumentation. The desktop driver talks over the VM service, so there is no plugin for it to find. The tests can still pass. Prefer `flutter test integration_test -d <device>`; that command does not print the warning. This is not a missing dependency in the example.
 
 ## License
 

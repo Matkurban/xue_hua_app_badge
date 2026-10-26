@@ -97,7 +97,7 @@ if (XueHuaAppBadge.instance.isSupported) {}
 
 **Parameters:**
 
-- `count` (`int`, required): badge number. Must be `>= 0`. `0` clears the badge (same as `remove`).
+- `count` (`int`, required): badge number. Must be `>= 0`. `0` clears the badge through `'setBadge'` (same visible result as `remove`, which uses `'removeBadge'`).
 - `windowHandle` (`int?`, optional, named): Windows HWND. Included in the channel map only when non-null. Ignored on non-Windows platforms.
 
 **Returns:** `Future<void>`. Completing does not mean a launcher showed a numeric badge. Android native returns a `bool` applied flag; Dart invokes the method as `<void>` and discards it.
@@ -131,27 +131,30 @@ await XueHuaAppBadge.instance.setBadge(5); // no such method
 
 **Parameters:**
 
-- `windowHandle` (`int?`, optional, named): forwarded to `set`.
+- `windowHandle` (`int?`, optional, named): Windows HWND. Included in the channel map only when non-null. Ignored on non-Windows platforms.
 
-**Implementation:** `await set(0, windowHandle: windowHandle)`.
+**Implementation:** invokes `'removeBadge'`. It does not call `set(0)`. `set(0)` remains a separate clear path on `'setBadge'`.
 
-**Returns:** `Future<void>`.
+**Returns:** `Future<void>`. Android's applied `bool` is discarded, same as `set`.
 
-**Channel:** `'setBadge'`, arguments `{ 'count': 0 }` and optional `'windowHandle'`. Dart does **not** call `'removeBadge'`. Native plugins still implement `'removeBadge'` for other callers; app Dart code must use `remove()`.
+**Channel:** `'removeBadge'`. Arguments are `null` when `windowHandle` is omitted, otherwise `{ 'windowHandle': windowHandle }`.
 
-**Throws:** same as `set(0)` (`PlatformException` possible; `ArgumentError` is not possible because `count` is `0`).
+**Throws:** `PlatformException` when a native handler reports an error. `ArgumentError` is not thrown.
+
+**Native clear:** Android `applyBadge(0)`, iOS and macOS `setBadgeCount(0)`, Windows `SetOverlayIcon` with a null icon, Linux Unity `Update` with `count` 0 and `count-visible` false. That matches `set(0)` on each platform.
 
 **Correct:**
 
 ```dart
 await XueHuaAppBadge.instance.remove();
 await XueHuaAppBadge.instance.remove(windowHandle: hwnd);
+await XueHuaAppBadge.instance.set(0); // also clears, via setBadge
 ```
 
 **Incorrect:**
 
 ```dart
-await XueHuaAppBadge.instance.removeBadge();
+await XueHuaAppBadge.instance.removeBadge(); // no such Dart method
 await XueHuaAppBadge.instance.remove(5); // no positional count
 ```
 

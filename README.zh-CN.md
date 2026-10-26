@@ -26,7 +26,7 @@
 
 ```yaml
 dependencies:
-  xue_hua_app_badge: ^2.1.5
+  xue_hua_app_badge: ^2.1.6
 ```
 
 ## 快速开始
@@ -98,6 +98,23 @@ dart run skills@ get
 # 或只安装本包：
 dart run skills@ get xue_hua_app_badge
 ```
+
+## 测试
+
+仓库根目录：
+
+```bash
+flutter test
+```
+
+在 `example/` 中跑桌面集成测试：
+
+```bash
+flutter test integration_test -d windows
+# 或 -d linux / -d macos
+```
+
+`flutter drive --driver=test_driver/integration_test.dart --target=integration_test/badge_test.dart` 在 Windows 和 Linux 上可能打印 `Warning: integration_test plugin was not detected`。`integration_test` 的原生插件只注册给 Android / iOS instrumentation；桌面 driver 走 VM service，没有对应的原生插件可发现。测试仍然可以通过。请优先使用 `flutter test integration_test -d <device>`，这条命令不会打印该警告。这不是 example 缺少依赖。
 
 ## 许可证
 

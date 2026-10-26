@@ -26,7 +26,7 @@ Cross-platform Flutter app badge plugin. Implemented using standard platform **M
 
 ```yaml
 dependencies:
-  xue_hua_app_badge: ^2.1.3
+  xue_hua_app_badge: ^2.1.5
 ```
 
 ## Quick Start

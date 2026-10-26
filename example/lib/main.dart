@@ -71,6 +71,7 @@ class _MyAppState extends State<MyApp> {
             children: [
               Text(
                 'Badge count: $_badgeCount',
+                key: const Key('badge_count'),
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
               const SizedBox(height: 24),
@@ -80,16 +81,19 @@ class _MyAppState extends State<MyApp> {
                 alignment: WrapAlignment.center,
                 children: [
                   FilledButton(
+                    key: const Key('badge_increment'),
                     onPressed: () => _updateBadge(_badgeCount + 1),
                     child: const Text('+1'),
                   ),
                   FilledButton(
+                    key: const Key('badge_decrement'),
                     onPressed: _badgeCount > 0
                         ? () => _updateBadge(_badgeCount - 1)
                         : null,
                     child: const Text('-1'),
                   ),
                   OutlinedButton(
+                    key: const Key('badge_clear'),
                     onPressed: () => _updateBadge(0),
                     child: const Text('Clear'),
                   ),
@@ -111,6 +115,7 @@ class _MyAppState extends State<MyApp> {
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Text(
                     _permissionHint!,
+                    key: const Key('badge_permission_hint'),
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.tertiary,
                     ),
@@ -124,6 +129,7 @@ class _MyAppState extends State<MyApp> {
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: SelectableText(
                     _lastError!,
+                    key: const Key('badge_error'),
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.error,
                     ),
